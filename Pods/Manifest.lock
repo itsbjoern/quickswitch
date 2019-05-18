@@ -1,0 +1,16 @@
+PODS:
+  - AXSwift (0.2.3)
+
+DEPENDENCIES:
+  - AXSwift (~> 0.2)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AXSwift
+
+SPEC CHECKSUMS:
+  AXSwift: d49fe05ca04f983196c5caedfc88f617922ae671
+
+PODFILE CHECKSUM: dbc5eca7abbde24df7018e6f6bd177b59190d0b5
+
+COCOAPODS: 1.5.3

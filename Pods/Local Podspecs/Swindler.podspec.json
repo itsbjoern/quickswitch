@@ -1,0 +1,36 @@
+{
+  "name": "Swindler",
+  "version": "0.0.4",
+  "summary": "macOS window management framework, written in Swift",
+  "description": "Swindler makes it easy to write window managers for macOS in Swift with a type-safe,\npromise-based API on top of the low-level accessibility APIs.",
+  "homepage": "https://github.com/tmandry/Swindler",
+  "documentation_url": "https://tmandry.github.io/Swindler/docs/0.0.4",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "Tyler Mandry": "tmandry@gmail.com"
+  },
+  "social_media_url": "http://twitter.com/tmandry",
+  "platforms": {
+    "osx": "10.10"
+  },
+  "source": {
+    "git": "https://github.com/tmandry/Swindler.git",
+    "tag": "0.0.4"
+  },
+  "source_files": [
+    "Sources",
+    "Sources/**/*.{h,swift}"
+  ],
+  "dependencies": {
+    "PromiseKit/CorePromise": [
+      "~> 6.0"
+    ],
+    "AXSwift": [
+      "0.2.3"
+    ]
+  },
+  "frameworks": "Cocoa"
+}
