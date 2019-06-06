@@ -1,6 +1,6 @@
 # Quickswitcher
 
-Window based tab switcher for macOS.
+Window based application switcher for macOS.
 
 ## Preferences
 Current configuration options.
