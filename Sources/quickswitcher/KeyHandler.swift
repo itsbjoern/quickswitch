@@ -23,6 +23,10 @@ func tapCallback(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent, refc
     return Unmanaged.passRetained(event)
 }
 
+func invalidation(_ port: CFMachPort?, _ info: UnsafeMutableRawPointer?) {
+    print(port, info)
+}
+
 class KeyHandler: NSObject {
     typealias Callback = (KeyHandler.Event) -> Bool
     
@@ -97,10 +101,13 @@ class KeyHandler: NSObject {
             print("failed to create event tap")
             exit(1)
         }
-        CFRunLoopAddSource(CFRunLoopGetCurrent(), CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0), CFRunLoopMode.commonModes);
+        let src = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0)
+        CFRunLoopAddSource(CFRunLoopGetCurrent(), src, CFRunLoopMode.commonModes);
+        CFMachPortSetInvalidationCallBack(eventTap, invalidation)
     }
     
     var currSequence = [Int64]()
+    var sequenceTriggered = false
     
     func checkKey(_ key: Int64, down: Bool) -> EventTuple? {
         let allPairs = registeredEvents.map { (pair) -> [EventTuple] in
@@ -108,21 +115,23 @@ class KeyHandler: NSObject {
                 return (pair.key, tuple.sequence, tuple.cb)
             })
             }.flatMap({ $0 })
-        
+
         if down {
             let contains = currSequence.contains(key)
             if  !contains || currSequence.last == key {
-                if !contains {
+                if !contains && !sequenceTriggered {
                     currSequence.append(key)
                 }
                 
                 for pair in allPairs {
                     if pair.sequence == currSequence {
+                        sequenceTriggered = true
                         return pair
                     }
                 }
             }
         } else {
+            sequenceTriggered = false
             let ind = currSequence.firstIndex(of: key)
             guard let safeIndex = ind else {
                 return nil
@@ -137,6 +146,7 @@ class KeyHandler: NSObject {
                 }
             }
         }
+        sequenceTriggered = false
         return nil
     }
     
@@ -152,18 +162,24 @@ class KeyHandler: NSObject {
                 let down = evt.flags.contains(flag)
 
                 if isRecording {
-                    if down && !recordedSequence.contains(intVal) {
+                    let contains = recordedSequence.contains(intVal)
+                    if down && !contains {
                         recordedSequence.append(intVal)
                         return nil
                     }
-                    else if !down && recordedSequence.contains(intVal) {
+                    else if !down && contains {
                         let ind = recordedSequence.firstIndex(of: intVal)!
                         recordedSequence.remove(at: ind)
                         return nil
                     }
                     continue
                 }
-
+                
+                let contains = currSequence.contains(intVal)
+                let changed = down && !contains || !down && contains
+                if !changed {
+                    continue
+                }
                 let evtTuple = checkKey(intVal, down: down)
                 let keyEvent = KeyHandler.Event(flags: evt.flags, keyCode: keyCode, sequence: currSequence)
                 

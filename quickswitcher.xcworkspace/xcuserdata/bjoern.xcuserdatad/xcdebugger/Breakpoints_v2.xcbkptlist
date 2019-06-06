@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Sources/quickswitcher/Switcher/SwitcherViewController.swift"
-            timestampString = "581509849.244616"
+            timestampString = "581512946.62967"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "383"
-            endingLineNumber = "383"
+            startingLineNumber = "391"
+            endingLineNumber = "391"
             landmarkName = "updateRender()"
             landmarkType = "7">
          </BreakpointContent>
@@ -26,7 +26,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Sources/quickswitcher/Preferences/ConfigViewController.swift"
-            timestampString = "581509849.244682"
+            timestampString = "581512946.6297441"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "62"

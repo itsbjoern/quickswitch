@@ -48,7 +48,7 @@ class PreferencesStore {
             }),
             Default(.mainSequence, [KeyHandler.FlagAsInt.command.rawValue, 48] as AnyObject, { (newValue) in
                 let delegate = NSApp.delegate as! AppDelegate
-                delegate.keyHandler.removeEventListeners(key: .main)
+                delegate.keyHandler!.removeEventListeners(key: .main)
                 delegate.addMainListener(forSequence: newValue as! [Int64])
             }),
             Default(.reverseSequence, [KeyHandler.FlagAsInt.command.rawValue, KeyHandler.FlagAsInt.shift.rawValue, 48] as AnyObject, { (newValue) in

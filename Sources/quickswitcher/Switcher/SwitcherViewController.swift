@@ -8,11 +8,18 @@
 
 import Cocoa
 
+class SelectionView: NSView {
+    override func updateLayer() {
+        super.updateLayer()
+        self.layer!.backgroundColor = NSColor.textColor.withAlphaComponent(0.1).cgColor
+    }
+}
+
 class SwitcherViewController : NSViewController {
     let window: SwitcherWindow
     var mainView: ResizingEffectView?
     let applicationView = ResizingView()
-    let selectionView = NSView()
+    let selectionView = SelectionView()
     let closeButton = NSButton(frame: NSMakeRect(0, 0, 12, 12))
     var windowList: [FullWindow] = []
     var selected = 0
@@ -85,8 +92,7 @@ class SwitcherViewController : NSViewController {
         
         selectionView.wantsLayer = true
         selectionView.layer!.cornerRadius = 8
-        selectionView.layer!.backgroundColor = CGColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.1)
-        
+
         closeButton.isHidden = true
         closeButton.target = self
         closeButton.action = #selector(closeWindow)
@@ -125,8 +131,10 @@ class SwitcherViewController : NSViewController {
 
             let buttonRef = UnsafeMutablePointer<AnyObject?>.allocate(capacity: 1)
             AXUIElementCopyAttributeValue(axWindow!, kAXCloseButtonAttribute as CFString, buttonRef)
-            let button = buttonRef.pointee as! AXUIElement
-            AXUIElementPerformAction(button, kAXPressAction as CFString)
+            if buttonRef.pointee != nil {
+                let button = buttonRef.pointee as! AXUIElement
+                AXUIElementPerformAction(button, kAXPressAction as CFString)
+            }
             buttonRef.deallocate()
         } else {
             fullWindow.app.activate(options: .activateIgnoringOtherApps)

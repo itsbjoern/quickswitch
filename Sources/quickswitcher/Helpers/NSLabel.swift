@@ -10,12 +10,14 @@ import Cocoa
 class NSLabel: NSTextField {
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
+        self.textColor = NSColor.controlTextColor
+        self.alphaValue = 0.9
+        self.maximumNumberOfLines = 1
         self.isBezeled = false
-        self.drawsBackground = false
+//        self.drawsBackground = false
         self.isEditable = false
         self.isSelectable = false
-        self.textColor = NSColor.white
-        self.maximumNumberOfLines = 1
+        self.backgroundColor = .none
     }
     
     convenience init(frame frameRect: NSRect, text: String) {

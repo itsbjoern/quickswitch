@@ -13,6 +13,7 @@
 		111D6BA52273503A00E74D6B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 111D6BA42273503A00E74D6B /* Assets.xcassets */; };
 		1145683822885BAE00B21311 /* KeyCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1145683722885BAE00B21311 /* KeyCodes.swift */; };
 		115B254722A91F0300CB4E9F /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 115B254622A91F0300CB4E9F /* .gitignore */; };
+		115B254922A9238C00CB4E9F /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 115B254822A9238C00CB4E9F /* README.md */; };
 		11609A0B22789A2700CE2C7D /* KCGWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11609A0A22789A2700CE2C7D /* KCGWindow.swift */; };
 		11609A0D2278B04600CE2C7D /* AXUIElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11609A0C2278B04600CE2C7D /* AXUIElement.swift */; };
 		11609A0F2278B34800CE2C7D /* FullWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11609A0E2278B34800CE2C7D /* FullWindow.swift */; };
@@ -24,6 +25,9 @@
 		11609A1C227B9F6000CE2C7D /* PreferencesDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11609A1B227B9F6000CE2C7D /* PreferencesDefaults.swift */; };
 		11609A1E227BA0C600CE2C7D /* NSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11609A1D227BA0C600CE2C7D /* NSView.swift */; };
 		11609A20227BA2E600CE2C7D /* PreferencesCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11609A1F227BA2E600CE2C7D /* PreferencesCell.swift */; };
+		11AB012622A94BDB00225C6D /* config_prefs.png in Resources */ = {isa = PBXBuildFile; fileRef = 11AB012322A94BDB00225C6D /* config_prefs.png */; };
+		11AB012722A94BDB00225C6D /* example.png in Resources */ = {isa = PBXBuildFile; fileRef = 11AB012422A94BDB00225C6D /* example.png */; };
+		11AB012822A94BDB00225C6D /* style_prefs.png in Resources */ = {isa = PBXBuildFile; fileRef = 11AB012522A94BDB00225C6D /* style_prefs.png */; };
 		11C6EAB622738E14005B396D /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C6EAB522738E14005B396D /* main.swift */; };
 		11C6EAB82274719D005B396D /* StyleViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C6EAB72274719D005B396D /* StyleViewController.swift */; };
 		11C6EABA227475E2005B396D /* SwitcherViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C6EAB9227475E2005B396D /* SwitcherViewController.swift */; };
@@ -50,6 +54,7 @@
 		111D6BAA2273503A00E74D6B /* quickswitcher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = quickswitcher.entitlements; sourceTree = "<group>"; };
 		1145683722885BAE00B21311 /* KeyCodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyCodes.swift; sourceTree = "<group>"; };
 		115B254622A91F0300CB4E9F /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		115B254822A9238C00CB4E9F /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		11609A0A22789A2700CE2C7D /* KCGWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KCGWindow.swift; sourceTree = "<group>"; };
 		11609A0C2278B04600CE2C7D /* AXUIElement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXUIElement.swift; sourceTree = "<group>"; };
 		11609A0E2278B34800CE2C7D /* FullWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullWindow.swift; sourceTree = "<group>"; };
@@ -61,6 +66,9 @@
 		11609A1B227B9F6000CE2C7D /* PreferencesDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesDefaults.swift; sourceTree = "<group>"; };
 		11609A1D227BA0C600CE2C7D /* NSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSView.swift; sourceTree = "<group>"; };
 		11609A1F227BA2E600CE2C7D /* PreferencesCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesCell.swift; sourceTree = "<group>"; };
+		11AB012322A94BDB00225C6D /* config_prefs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = config_prefs.png; sourceTree = "<group>"; };
+		11AB012422A94BDB00225C6D /* example.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = example.png; sourceTree = "<group>"; };
+		11AB012522A94BDB00225C6D /* style_prefs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = style_prefs.png; sourceTree = "<group>"; };
 		11C6EAB522738E14005B396D /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		11C6EAB72274719D005B396D /* StyleViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleViewController.swift; sourceTree = "<group>"; };
 		11C6EAB9227475E2005B396D /* SwitcherViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherViewController.swift; sourceTree = "<group>"; };
@@ -130,6 +138,8 @@
 		111D6B962273503800E74D6B = {
 			isa = PBXGroup;
 			children = (
+				11AB012222A94BBF00225C6D /* readme */,
+				115B254822A9238C00CB4E9F /* README.md */,
 				115B254622A91F0300CB4E9F /* .gitignore */,
 				11C6EAC12274B19A005B396D /* Screen.md */,
 				111D6BA12273503800E74D6B /* quickswitcher */,
@@ -192,6 +202,16 @@
 				11C6EACA2275DB12005B396D /* icon.png */,
 			);
 			path = Assets;
+			sourceTree = "<group>";
+		};
+		11AB012222A94BBF00225C6D /* readme */ = {
+			isa = PBXGroup;
+			children = (
+				11AB012522A94BDB00225C6D /* style_prefs.png */,
+				11AB012322A94BDB00225C6D /* config_prefs.png */,
+				11AB012422A94BDB00225C6D /* example.png */,
+			);
+			path = readme;
 			sourceTree = "<group>";
 		};
 		11C6EAC72274BC1B005B396D /* ApplicationsOrdered */ = {
@@ -303,8 +323,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				11C6EAC22274B19A005B396D /* Screen.md in Resources */,
+				11AB012622A94BDB00225C6D /* config_prefs.png in Resources */,
+				11AB012822A94BDB00225C6D /* style_prefs.png in Resources */,
 				111D6BA52273503A00E74D6B /* Assets.xcassets in Resources */,
 				11609A142279947F00CE2C7D /* icon.svg in Resources */,
+				115B254922A9238C00CB4E9F /* README.md in Resources */,
+				11AB012722A94BDB00225C6D /* example.png in Resources */,
 				11C7C63F2276304900AB05E8 /* Podfile in Resources */,
 				115B254722A91F0300CB4E9F /* .gitignore in Resources */,
 				11C6EACB2275DB13005B396D /* icon.png in Resources */,

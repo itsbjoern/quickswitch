@@ -82,7 +82,7 @@ class ConfigViewController : NSViewController, PreferencePane {
 
         button.setRecording()
 
-        keyHandler.recordSequence { (sequence) in
+        keyHandler!.recordSequence { (sequence) in
             let nums: [NSNumber] = sequence.map({ (i) -> NSNumber in
                 return NSNumber(value: i)
             })
@@ -99,7 +99,7 @@ class ConfigViewController : NSViewController, PreferencePane {
     func paneWillDisappear() {
         let delegate = NSApplication.shared.delegate as! AppDelegate
         let keyHandler = delegate.keyHandler
-        keyHandler.stopRecording()
+        keyHandler!.stopRecording()
         
         guard let button = recordingButton else {
             return

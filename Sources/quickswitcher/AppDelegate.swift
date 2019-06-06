@@ -11,7 +11,7 @@ import Carbon
 import AXSwift
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    let keyHandler = KeyHandler()
+    var keyHandler: KeyHandler?
     
     lazy var preferencesWindowController = PreferenceController()
     lazy var switcherWindow = SwitcherWindow()
@@ -25,18 +25,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         set {
             if newValue && self._cycleBackwardsWithShift != newValue {
-                keyHandler.addEventListener(key: .mainReverse, sequence: _cycleBackwardsWithShiftSequence, self.reverseCallback)
+                keyHandler!.addEventListener(key: .mainReverse, sequence: _cycleBackwardsWithShiftSequence, self.reverseCallback)
             }
             self._cycleBackwardsWithShift = newValue
             if !newValue {
-                keyHandler.removeEventListeners(key: .mainReverse, sequence: _cycleBackwardsWithShiftSequence)
+                keyHandler!.removeEventListeners(key: .mainReverse, sequence: _cycleBackwardsWithShiftSequence)
             }
         }
     }
     
     func addMainListener(forSequence sequence: [Int64]) {
         let switcher = switcherWindow
-        self.keyHandler.addEventListener(key: .main, sequence: sequence) { _ -> Bool in
+        self.keyHandler!.addEventListener(key: .main, sequence: sequence) { _ -> Bool in
             if !switcher.isVisible {
                 switcher.show()
             }
@@ -58,16 +58,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func addReverseListener(forSequence sequence: [Int64]) {
-        self.keyHandler.addEventListener(key: .mainReverse, sequence: sequence, self.reverseCallback)
+        self.keyHandler!.addEventListener(key: .mainReverse, sequence: sequence, self.reverseCallback)
     }
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        guard AXSwift.checkIsProcessTrusted(prompt: true) else {
-            print("Not trusted as an AX process; please authorize and re-launch")
-            NSApp.terminate(self)
-            return
+        guard AXIsProcessTrusted() else {
+            AXSwift.checkIsProcessTrusted(prompt: true)
+            let alert = NSAlert()
+            alert.messageText = "Accessibility permissions needed"
+            alert.informativeText = "Please enable accessibility permissions and re-run the application."
+            alert.alertStyle = .warning
+            alert.addButton(withTitle: "Confirm")
+            alert.runModal()
+            exit(1)
         }
-        
+        self.keyHandler = KeyHandler()
+
         let switcher = switcherWindow
         let mainSequence: [Int64] = PreferencesStore.shared.getValue(.mainSequence)
         self.addMainListener(forSequence: mainSequence)
@@ -76,7 +82,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.addReverseListener(forSequence: reverseSequence)
         
         self.cycleBackwardsWithShift = PreferencesStore.shared.getValue(.cycleBackwardsWithShift)
-        self.keyHandler.addEventListener(key: .close, sequence: []) { _ -> Bool in
+        self.keyHandler!.addEventListener(key: .close, sequence: []) { _ -> Bool in
             if switcher.isVisible {
                 switcher.hide()
             }
