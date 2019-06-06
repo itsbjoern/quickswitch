@@ -110,8 +110,11 @@ class KeyHandler: NSObject {
             }.flatMap({ $0 })
         
         if down {
-            if !currSequence.contains(key) {
-                currSequence.append(key)
+            let contains = currSequence.contains(key)
+            if  !contains || currSequence.last == key {
+                if !contains {
+                    currSequence.append(key)
+                }
                 
                 for pair in allPairs {
                     if pair.sequence == currSequence {

@@ -46,7 +46,7 @@ class ConfigViewController : NSViewController, PreferencePane {
     }
     
     override func loadView() {
-        let view = FlippedView(frame: NSMakeRect(0, 0, 500, 400))
+        let view = FlippedView(frame: NSMakeRect(0, 0, 500, 250))
         view.addSubview(preferenceTable)
         preferenceTable.setFrameSize(view.frame.size)
         self.view = view
@@ -71,6 +71,7 @@ class ConfigViewController : NSViewController, PreferencePane {
         button.sizeToFit()
         button.needsDisplay = true
         button.prefType = key
+        button.setFrameX(-5)
         return button
     }
     
@@ -106,6 +107,13 @@ class ConfigViewController : NSViewController, PreferencePane {
         button.setNormal()
     }
     
+    func getMainCell() -> NSView {
+        let wrapper = ResizingView()
+        let button = getButton(mainSequenceButton, .mainSequence)
+        wrapper.addSubview(button)
+        return wrapper
+    }
+    
     @objc func setCycleShift(_ checkbox: NSButton) {
         let isOn = checkbox.state == .on
         PreferencesStore.shared.saveValue(isOn, forKey: .cycleBackwardsWithShift)
@@ -116,7 +124,6 @@ class ConfigViewController : NSViewController, PreferencePane {
         let checkbox = NSButton(checkboxWithTitle: "Enable ⌘ + ⇧ when activated.", target: self, action: #selector(setCycleShift))
         checkbox.state = PreferencesStore.shared.getValue(.cycleBackwardsWithShift) ? .on : .off
         button.setFrameY(button.frame.height - 10)
-        checkbox.setFrameX(5)
         
         let wrapper = ResizingView()
         wrapper.addSubview(button)
@@ -124,11 +131,34 @@ class ConfigViewController : NSViewController, PreferencePane {
         return wrapper
     }
     
+    func getKeepClosedWindows() -> NSView {
+        let checkbox = NSButton(checkboxWithTitle: "", target: self, action: #selector(setKeepClosedWindow))
+        checkbox.state = PreferencesStore.shared.getValue(.keepClosedWindows) ? .on : .off
+        return checkbox
+    }
+    
+    @objc func setKeepClosedWindow(_ checkbox: NSButton) {
+        let isOn = checkbox.state == .on
+        PreferencesStore.shared.saveValue(isOn, forKey: .keepClosedWindows)
+    }
+    
+    func getEnableMouseSelection() -> NSView {
+        let checkbox = NSButton(checkboxWithTitle: "", target: self, action: #selector(setEnableMouseSelection))
+        checkbox.state = PreferencesStore.shared.getValue(.enableMouseSelection) ? .on : .off
+        return checkbox
+    }
+    
+    @objc func setEnableMouseSelection(_ checkbox: NSButton) {
+        let isOn = checkbox.state == .on
+        PreferencesStore.shared.saveValue(isOn, forKey: .enableMouseSelection)
+    }
+    
     override func viewDidLoad() {
+        preferenceTable.addSubview(PreferencesSeperator(text: "Keys"))
         preferenceTable.addSubview(PreferencesCell(
             label: "Cycle Forwards",
             tooltip: "Key sequence used to activate and cycle forwards.",
-            control: getButton(mainSequenceButton, .mainSequence),
+            control: getMainCell(),
             textOffset: 7
         ))
         preferenceTable.addSubview(PreferencesCell(
@@ -136,6 +166,17 @@ class ConfigViewController : NSViewController, PreferencePane {
             tooltip: "Key sequence used to activate and cycle backwards.",
             control: getReverseCell(),
             textOffset: 7
+        ))
+        preferenceTable.addSubview(PreferencesSeperator(text: "Other"))
+        preferenceTable.addSubview(PreferencesCell(
+            label: "Keep running application windows",
+            tooltip: "Enables reopening a window if the application is still running even if the window has been closed previously",
+            control: getKeepClosedWindows()
+        ))
+        preferenceTable.addSubview(PreferencesCell(
+            label: "Enable mouse selection",
+            tooltip: "Select windows by hovering with the mouse",
+            control: getEnableMouseSelection()
         ))
     }
 }

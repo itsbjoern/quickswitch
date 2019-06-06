@@ -118,7 +118,7 @@ class SwitcherViewController : NSViewController {
         let fullWindow = windowList[selected]
         let axWindow = fullWindow.axWindow
 
-        fullWindow.app.activate(options: .activateIgnoringOtherApps)
+       
         if axWindow != nil {
             AXUIElementPerformAction(axWindow!, kAXRaiseAction as CFString)
             axWindow!.setAttribute("Main", value: true as CFTypeRef)
@@ -128,13 +128,14 @@ class SwitcherViewController : NSViewController {
             let button = buttonRef.pointee as! AXUIElement
             AXUIElementPerformAction(button, kAXPressAction as CFString)
             buttonRef.deallocate()
-            windowList.remove(at: selected)
-            let savedIndex = selected
-            self.updateRender()
-            self.moveSelection(toIndex: savedIndex == 0 ? 0 : savedIndex - 1)
         } else {
+            fullWindow.app.activate(options: .activateIgnoringOtherApps)
             fullWindow.app.terminate()
         }
+        self.windowList.remove(at: self.selected)
+        let savedIndex = self.selected
+        self.updateRender()
+        self.moveSelection(toIndex: savedIndex == 0 ? 0 : savedIndex - 1)
     }
 
     func activateCurrent() {
@@ -159,15 +160,24 @@ class SwitcherViewController : NSViewController {
     }
 
     func mouseSelection(_ point: CGPoint) {
+        let mouseSelection: Bool = PreferencesStore.shared.getValue(.enableMouseSelection)
+        let showClose: Bool = PreferencesStore.shared.getValue(.showCloseButton)
+
+        var any = false
         for (i, view) in self.applicationView.subviews.enumerated() {
             let padded = view.frame
                 .insetBy(dx: -selectionPadding, dy: -selectionPadding * 2)
-                .offsetBy(dx: selectionPadding, dy: selectionPadding + 5)
+                .offsetBy(dx: selectionPadding, dy: selectionPadding - 10)
             if padded.contains(point) {
-                self.moveSelection(toIndex: i)
+                if mouseSelection {
+                    self.moveSelection(toIndex: i)
+                }
                 
-                let showClose: Bool = PreferencesStore.shared.getValue(.showCloseButton)
                 if showClose {
+                    closeButton.setFrameOrigin(NSMakePoint(
+                        padded.origin.x + 8,
+                        padded.origin.y + padded.height - closeButton.frame.height - 8))
+                    
                     closeButton.isHidden = false
                     if closeButton.frame.contains(point) {
                         let color = NSColor(red: 0.631, green: 0.027, blue: 0.016, alpha: 1)
@@ -176,10 +186,12 @@ class SwitcherViewController : NSViewController {
                         closeButton.title = ""
                     }
                 }
+                any = true
                 break
-            } else {
-                closeButton.isHidden = true
             }
+        }
+        if !any {
+            closeButton.isHidden = true
         }
     }
     
@@ -205,10 +217,6 @@ class SwitcherViewController : NSViewController {
 
         selectionView.setFrameSize(newSize)
         selectionView.setFrameOrigin(newOrigin)
-        
-        closeButton.setFrameOrigin(NSMakePoint(
-            newOrigin.x + 8,
-            newOrigin.y + selectionView.frame.height - closeButton.frame.height - 8))
     }
 
     func screenshot(_ pids: [Int32]) -> [Int32: CGImage?] {
@@ -312,6 +320,10 @@ class SwitcherViewController : NSViewController {
         }
         
         for (i, window) in windowList.enumerated() {
+            if window.app.processIdentifier == ProcessInfo.processInfo.processIdentifier {
+                continue
+            }
+            
             var stillExists = false
             var appHasAnotherWindow = false
             for newWindow in newWindowList {
@@ -349,9 +361,10 @@ class SwitcherViewController : NSViewController {
             subview.removeFromSuperview()
         }
 
+        let screenWidth = NSScreen.main!.frame.width
         var xOffset: CGFloat = mainPadding
-        let breakAfter = 7
-        let cellWidth: CGFloat = 130
+        let cellWidth: CGFloat = PreferencesStore.shared.getValue(.previewSize)
+        let breakAfter = Int((screenWidth - 500) / cellWidth)
         for (index, fullWindow) in windowList.enumerated() {
             if index % breakAfter == 0 {
                 xOffset = mainPadding
@@ -389,7 +402,7 @@ class SwitcherViewController : NSViewController {
                 cellWidth * 10 / 16)
             )
             if fullWindow.isHidden {
-                imageView.alphaValue = 0.3
+                imageView.alphaValue = 0.4
             }
             
             appPreview.addSubview(imageView)
@@ -407,10 +420,10 @@ class SwitcherViewController : NSViewController {
                         imageView.image = ssImage
                         fullWindow.screenshot = screenshot
     
-                        let iconSize: CGFloat = 40
+                        let iconSize: CGFloat = cellWidth * 0.3
                         let iconView = NSImageView(frame: NSMakeRect(
                             cellWidth - iconSize / 2 - 10,
-                            cellWidth * 10 / 16 - 5,
+                            appPreview.frame.height - iconSize - 10 * ((cellWidth - 75) / 75),
                             iconSize,
                             iconSize)
                         )
@@ -423,6 +436,9 @@ class SwitcherViewController : NSViewController {
                     }
                 }
             }
+            if fullWindow.isClosed {
+                appPreview.alphaValue = 0.6
+            }
             let shadow = Shadow(0.5, .black, NSMakeSize(0, -3), 7)
             imageView.addShadow(shadow)
             
@@ -430,12 +446,13 @@ class SwitcherViewController : NSViewController {
             xOffset += appPreview.frame.width + cellMargin + selectionPadding * 2
         }
 
+        self.moveSelection(toIndex: 0)
+        self.closeButton.setFrameY(0)
         mainView!.resize(exclude: selectionView)
         let x = NSScreen.main!.frame.width / 2 - mainView!.frame.width / 2
         let y = NSScreen.main!.frame.height / 2 - mainView!.frame.height / 2
 
         let newFrame = CGRect(origin: NSMakePoint(x, y), size: mainView!.frame.size)
         self.window.resize(newFrame)
-        self.moveSelection(toIndex: 0)
     }
 }

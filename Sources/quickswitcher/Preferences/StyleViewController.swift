@@ -14,6 +14,8 @@ class StyleViewController : NSViewController, PreferencePane {
 
     let defaults = UserDefaults.standard
     
+    let sliderLabel = NSLabel(text: "00000")
+    
     class FlippedView: NSView {
         override var isFlipped: Bool {
             get {
@@ -23,7 +25,7 @@ class StyleViewController : NSViewController, PreferencePane {
     }
     
     override func loadView() {
-        let view = FlippedView(frame: NSMakeRect(0, 0, 400, 300))
+        let view = FlippedView(frame: NSMakeRect(0, 0, 400, 150))
         view.addSubview(preferenceTable)
         preferenceTable.setFrameSize(view.frame.size)
         self.view = view
@@ -69,12 +71,38 @@ class StyleViewController : NSViewController, PreferencePane {
         PreferencesStore.shared.saveValue(isOn, forKey: .showCloseButton)
     }
     
+    func getSizeSlider() -> NSView {
+        let previewSize: Int = PreferencesStore.shared.getValue(.previewSize)
+        let view = ResizingView()
+        let slider = NSSlider(value: Double(previewSize), minValue: 80, maxValue: 150, target: self, action: #selector(self.changeSliderValue))
+        slider.numberOfTickMarks = 8
+        slider.allowsTickMarkValuesOnly = true
+
+        sliderLabel.stringValue = "\(previewSize)px"
+        sliderLabel.setFrameX(slider.frame.width + 5)
+        sliderLabel.setFrameY(3)
+
+        view.addSubview(slider)
+        view.addSubview(sliderLabel)
+        return view
+    }
+    
+    @objc func changeSliderValue(_ slider: NSSlider) {
+        sliderLabel.stringValue = "\(slider.integerValue)px"
+        PreferencesStore.shared.saveValue(slider.integerValue, forKey: .previewSize)
+    }
+
     override func viewDidLoad() {
         preferenceTable.addSubview(PreferencesCell(
             label: "Background Style",
             tooltip: "The switcher background style. Default is the same as the Light or Dark setting but depends on the system default.",
             control: self.getStyleCell(),
             textOffset: 7
+        ))
+        preferenceTable.addSubview(PreferencesCell(
+            label: "Preview Size",
+            tooltip: "Adjust preview size.",
+            control: self.getSizeSlider()
         ))
         preferenceTable.addSubview(PreferencesCell(
             label: "Show Previews",

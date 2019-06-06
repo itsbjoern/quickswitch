@@ -28,15 +28,23 @@ class SwitcherWindow: NSWindow {
         self.setIsVisible(false)
         self.collectionBehavior = .moveToActiveSpace
         
-        trackingArea = NSTrackingArea.init(rect: self.contentView!.bounds, options: [.activeAlways, .mouseMoved], owner: self, userInfo: nil)
+        trackingArea = NSTrackingArea.init(rect: getTrackingArea(), options: [.activeAlways, .mouseMoved], owner: self, userInfo: nil)
         content.addTrackingArea(trackingArea!)
     }
     
     func resize(_ newFrame: NSRect) {
         self.setFrame(newFrame, display: true)
         self.contentView?.removeTrackingArea(trackingArea!)
-        trackingArea = NSTrackingArea.init(rect: self.contentView!.bounds, options: [.activeAlways, .mouseMoved], owner: self, userInfo: nil)
+        trackingArea = NSTrackingArea.init(rect: getTrackingArea(), options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited], owner: self, userInfo: nil)
         self.contentView?.addTrackingArea(trackingArea!)
+    }
+    
+    func getTrackingArea() -> CGRect {
+        return self.contentView!.bounds.applying(.init(translationX: 10, y: 10))
+    }
+    
+    override func mouseExited(with event: NSEvent) {
+        controller!.mouseSelection(.zero)
     }
     
     override func mouseMoved(with event: NSEvent) {

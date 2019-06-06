@@ -9,7 +9,7 @@
 import Cocoa
 
 class PreferencesStore {
-    enum Preference: String { case backgroundStyle, mainSequence, reverseSequence, cycleBackwardsWithShift, showPreviews, showCloseButton }
+    enum Preference: String { case backgroundStyle, mainSequence, reverseSequence, cycleBackwardsWithShift, showPreviews, showCloseButton, previewSize, keepClosedWindows, enableMouseSelection }
 
     struct Default {
         let key: Preference
@@ -59,11 +59,17 @@ class PreferencesStore {
             }),
             Default(.showPreviews, true as AnyObject, { (newValue) in
             }),
+            Default(.previewSize, 130 as AnyObject, { (newValue) in
+            }),
             Default(.showCloseButton, true as AnyObject, { (newValue) in
                 let delegate = NSApp.delegate as! AppDelegate
                 let switcher = delegate.switcherWindow.controller!
                 switcher.setShowClose(newValue as! Bool)
-            })
+            }),
+            Default(.keepClosedWindows, true as AnyObject, { (newValue) in
+            }),
+            Default(.enableMouseSelection, true as AnyObject, { (newValue) in
+            }),
         ]
         
         for l in lst {
