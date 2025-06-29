@@ -1,5 +1,5 @@
 build:
-	xcodebuild -project quickswitcher.xcodeproj
+	xcodebuild -project quickswitch.xcodeproj
 
 run:
-	./build/Release/quickswitcher.app/Contents/MacOS/quickswitcher
+	./build/Release/quickswitch.app/Contents/MacOS/quickswitch

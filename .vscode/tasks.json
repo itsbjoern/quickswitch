@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "sweetpad",
+      "action": "launch",
+      "label": "sweetpad: launch",
+      "detail": "Build and launch the app (Debug)",
+      "scheme": "quickswitch",
+      "configuration": "Debug",
+      "isBackground": true, // Important: lets VS Code know when the task is ready
+      "problemMatcher": [
+        "$sweetpad-watch",
+        "$sweetpad-xcodebuild-default",
+        "$sweetpad-xcbeautify-errors",
+        "$sweetpad-xcbeautify-warnings"
+      ]
+    },
+    {
+      "type": "sweetpad",
+      "action": "launch",
+      "label": "sweetpad: launch release",
+      "detail": "Build and launch the app (Release)",
+      "scheme": "quickswitch",
+      "configuration": "Release",
+      "isBackground": true, // Important: lets VS Code know when the task is ready
+      "problemMatcher": [
+        "$sweetpad-watch",
+        "$sweetpad-xcodebuild-default",
+        "$sweetpad-xcbeautify-errors",
+        "$sweetpad-xcbeautify-warnings"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "editor.formatOnSave": true,
+  "files.associations": {
+    "src/quickswitch-Bridging-Header.h": "objective-c"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "sweetpad-lldb",
+      "request": "attach",
+      "name": "Attach to running app (SweetPad)",
+      "preLaunchTask": "sweetpad: launch"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:quickswitch}",
+      "name": "Debug quickswitch",
+      "program": "${workspaceFolder:quickswitch}/.build/debug/quickswitch",
+      "preLaunchTask": "swift: Build Debug quickswitch"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:quickswitch}",
+      "name": "Release quickswitch",
+      "program": "${workspaceFolder:quickswitch}/.build/release/quickswitch",
+      "preLaunchTask": "swift: Build Release quickswitch"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:quickswitch}",
+      "name": "Debug Debug",
+      "program": "${workspaceFolder:quickswitch}/.build/debug/Debug",
+      "preLaunchTask": "swift: Build Debug Debug"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:quickswitch}",
+      "name": "Release Debug",
+      "program": "${workspaceFolder:quickswitch}/.build/release/Debug",
+      "preLaunchTask": "swift: Build Release Debug"
+    }
+  ]
+}
