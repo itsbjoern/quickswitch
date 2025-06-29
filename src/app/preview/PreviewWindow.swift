@@ -15,11 +15,26 @@ class SelectionView: NSView {
   }
 }
 
+class ContentView: NSView {
+  override var isOpaque: Bool {
+    return false
+  }
+
+  override var allowsVibrancy: Bool {
+    return true
+  }
+
+  override func draw(_ dirtyRect: NSRect) {
+    super.draw(dirtyRect)
+    // self.layer?.backgroundColor = NSColor.clear.cgColor
+    // self.wantsLayer = true
+  }
+
+}
+
 class PreviewWindow: NSWindow {
-  let mainPadding: CGFloat = 10
-  let cellPadding: CGFloat = 10
-  let selectionPadding: CGFloat = 10
-  let cellMargin: CGFloat = 10
+  let mainPadding: CGFloat = 30
+  let cellMargin: CGFloat = 20
 
   let applicationView: ResizingView
   let selectionView: SelectionView
@@ -43,21 +58,25 @@ class PreviewWindow: NSWindow {
 
     super.init(contentRect: contentRect, styleMask: style, backing: backingStoreType, defer: false)
 
-    print("PreviewViewController init")
+    self.backgroundColor = .clear
+    self.isOpaque = false
+    self.collectionBehavior = .moveToActiveSpace
+
+    self.setIsVisible(false)
+
+    self.contentView = ContentView(frame: NSMakeRect(0, 0, 0, 0))
 
     let effectView = NSVisualEffectView()
     self.contentView!.addSubview(effectView)
-    effectView.material = .fullScreenUI
+    effectView.material = .light
     effectView.blendingMode = .behindWindow
     effectView.state = .active
     effectView.autoresizingMask = [.width, .height]
     effectView.wantsLayer = true
-    // effectView.layer!.backgroundColor = .clear
     effectView.layer!.cornerRadius = 16
-    effectView.layer!.opacity = 0.8
 
     self.contentView!.addSubview(selectionView)
-    let selectionShadow = Shadow(0.4, .black, NSMakeSize(0, -3), 6)
+    let selectionShadow = Shadow(0.2, .black, NSMakeSize(0, 0), 8)
     selectionView.addShadow(selectionShadow)
 
     selectionView.wantsLayer = true
@@ -67,14 +86,9 @@ class PreviewWindow: NSWindow {
     applicationView.wantsLayer = true
     applicationView.layer?.masksToBounds = false
 
-    self.backgroundColor = .clear
-    self.isOpaque = false
-    self.collectionBehavior = .moveToActiveSpace
-
-    self.setIsVisible(false)
-
     trackingArea = NSTrackingArea.init(
-      rect: getTrackingArea(), options: [.activeAlways, .mouseMoved], owner: self, userInfo: nil)
+      rect: self.applicationView.bounds, options: [.activeAlways, .mouseMoved], owner: self,
+      userInfo: nil)
     self.contentView!.addTrackingArea(trackingArea!)
 
     NSWorkspace.shared.notificationCenter.addObserver(
@@ -87,20 +101,6 @@ class PreviewWindow: NSWindow {
       self, selector: #selector(self.unhideWindow),
       name: NSWorkspace.didUnhideApplicationNotification, object: nil)
 
-  }
-
-  func resize(_ newFrame: NSRect) {
-    self.setFrame(newFrame, display: true)
-    self.setContentSize(NSSize(width: newFrame.width, height: newFrame.height))
-    self.contentView?.removeTrackingArea(trackingArea!)
-    trackingArea = NSTrackingArea.init(
-      rect: getTrackingArea(), options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited],
-      owner: self, userInfo: nil)
-    self.contentView?.addTrackingArea(trackingArea!)
-  }
-
-  func getTrackingArea() -> CGRect {
-    return self.contentView!.bounds.applying(.init(translationX: 10, y: 10))
   }
 
   override func mouseExited(with event: NSEvent) {
@@ -193,11 +193,17 @@ class PreviewWindow: NSWindow {
 
   func mouseSelection(_ point: CGPoint) {
     let mouseSelection: Bool = PreferenceStore.shared.enableMouseSelection
+    let selectionPadding = self.cellMargin / 2
 
     for (i, view) in self.applicationView.subviews.enumerated() {
-      let padded = view.frame
-        .insetBy(dx: -selectionPadding, dy: -selectionPadding * 2)
-        .offsetBy(dx: selectionPadding, dy: selectionPadding - 10)
+      let padded = NSRect(
+        origin: NSMakePoint(
+          CGFloat(view.frame.origin.x - selectionPadding),
+          CGFloat(view.frame.origin.y - selectionPadding)),
+        size: NSMakeSize(
+          view.frame.size.width + selectionPadding * 2,
+          view.frame.size.height + selectionPadding * 2))
+
       if padded.contains(point) {
         if mouseSelection {
           self.moveSelection(toIndex: i)
@@ -219,13 +225,14 @@ class PreviewWindow: NSWindow {
     selected = (index % count + count) % count
     let subview = applicationView.subviews[selected]
 
+    let selectionPadding = self.cellMargin / 2
     let newSize = NSMakeSize(
       subview.frame.size.width + selectionPadding * 2,
       subview.frame.size.height + selectionPadding * 2)
 
     let newOrigin = NSMakePoint(
-      subview.frame.origin.x - selectionPadding + mainPadding,
-      subview.frame.origin.y - selectionPadding + mainPadding)
+      subview.frame.origin.x - selectionPadding,
+      subview.frame.origin.y - selectionPadding)
 
     selectionView.setFrameSize(newSize)
     selectionView.setFrameOrigin(newOrigin)
@@ -328,33 +335,36 @@ class PreviewWindow: NSWindow {
     }
 
     let screenWidth = NSScreen.main!.frame.width
-    var xOffset: CGFloat = mainPadding
-    let cellWidth: CGFloat = CGFloat.init(PreferenceStore.shared.previewSize)
-    let breakAfter = Int((screenWidth - 500) / cellWidth)
+
+    var xOffset: CGFloat = 0
+    let cellSize: CGFloat = CGFloat.init(PreferenceStore.shared.previewSize)
+    let breakAfter = Int((screenWidth - 500) / (cellSize + cellMargin))
+
     for (index, qsWindow) in windowList.enumerated() {
       if index % breakAfter == 0 {
-        xOffset = mainPadding
+        xOffset = 0
       }
 
       let row = index / breakAfter
-      let maxRow = (windowList.count - 1) / breakAfter
-      let yOffset = CGFloat(maxRow - row) * (cellWidth + cellMargin * 2) + cellMargin  // appPreview.frame.height
+      let maxRow = windowList.count / breakAfter
+      let yOffset = CGFloat(maxRow - row) * (cellSize + cellMargin)
       let offset = NSMakePoint(xOffset, yOffset)
+
       let appPreview = NSView(
-        frame: NSRect(origin: offset, size: NSMakeSize(cellWidth, cellWidth)))
+        frame: NSRect(origin: offset, size: NSMakeSize(cellSize, cellSize)))
       appPreview.wantsLayer = true
       appPreview.layer?.masksToBounds = false
+      // appPreview.layer?.backgroundColor = .init(red: 255, green: 0, blue: 0, alpha: 1)
 
-      let nameLabel = NSLabel(
-        text: (qsWindow.title())
-      )
-      nameLabel.preferredMaxLayoutWidth = cellWidth
+      let nameLabel = NSLabel(text: qsWindow.title())
+      nameLabel.preferredMaxLayoutWidth = cellSize
       nameLabel.lineBreakMode = .byTruncatingTail
       nameLabel.font = .systemFont(ofSize: 12, weight: .bold)
       nameLabel.alignment = .center
-      nameLabel.setFrameSize(NSMakeSize(cellWidth, nameLabel.frame.height))
+      nameLabel.setFrameSize(NSMakeSize(cellSize, nameLabel.frame.height))
       nameLabel.setFrameOrigin(NSMakePoint(0, 3))
       appPreview.addSubview(nameLabel)
+
       //
       //            let appLabel = NSLabel(text: qsWindow.app.localizedName!)
       //            appLabel.preferredMaxLayoutWidth = cellWidth
@@ -364,38 +374,47 @@ class PreviewWindow: NSWindow {
       //            appLabel.textColor = .gray
       //            appPreview.addSubview(appLabel)
 
-      let imageView = NSImageView(
+      let iconY = nameLabel.frame.height + 15
+      let iconView = NSImageView(
         frame: NSMakeRect(
           0,
-          nameLabel.frame.height + 15,
-          cellWidth,
-          cellWidth * 10 / 16)
+          iconY,
+          cellSize,
+          cellSize - iconY)
       )
       if qsWindow.isHidden {
-        imageView.alphaValue = 0.4
+        iconView.alphaValue = 0.4
       }
 
-      appPreview.addSubview(imageView)
-
-      imageView.image = qsWindow.app.icon!
-      imageView.image!.size = NSMakeSize(75, 75)
+      iconView.image = qsWindow.app.icon!
+      iconView.image!.size = NSMakeSize(cellSize / 1.5, cellSize / 1.5)
+      appPreview.addSubview(iconView)
 
       if qsWindow.isClosed {
         appPreview.alphaValue = 0.6
       }
-      let shadow = Shadow(0.5, .black, NSMakeSize(0, -3), 7)
-      imageView.addShadow(shadow)
+      let shadow = Shadow(0.2, .black, NSMakeSize(0, 0), 10)
+      iconView.addShadow(shadow)
 
       applicationView.addSubview(appPreview)
-      xOffset += appPreview.frame.width + cellMargin + selectionPadding * 2
+      xOffset += appPreview.frame.width + cellMargin
     }
 
     self.moveSelection(toIndex: 0)
-    self.applicationView.resize(exclude: selectionView)
+    self.applicationView.resize()
+
+    // Center the application view in the window
     let x = NSScreen.main!.frame.width / 2 - self.applicationView.frame.width / 2
     let y = NSScreen.main!.frame.height / 2 - self.applicationView.frame.height / 2
-
     let newFrame = CGRect(origin: NSMakePoint(x, y), size: self.applicationView.frame.size)
-    self.resize(newFrame)
+    self.setFrame(newFrame, display: true)
+
+    // Update the tracking area to new frame
+    self.contentView?.removeTrackingArea(trackingArea!)
+    trackingArea = NSTrackingArea.init(
+      rect: self.applicationView.bounds,
+      options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited],
+      owner: self, userInfo: nil)
+    self.contentView?.addTrackingArea(trackingArea!)
   }
 }

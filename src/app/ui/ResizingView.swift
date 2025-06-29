@@ -57,10 +57,10 @@ class ResizingView: NSView {
       }
 
       if adjustWidth {
-        size.width = max(size.width, abs(s.frame.origin.x) + s.frame.width)
+        size.width = max(size.width, abs(s.frame.origin.x) + s.frame.width - padding)
       }
       if adjustHeight {
-        size.height = max(size.height, abs(s.frame.origin.y) + s.frame.height)
+        size.height = max(size.height, abs(s.frame.origin.y) + s.frame.height - padding)
       }
     }
     if adjustWidth {
@@ -125,10 +125,10 @@ class ResizingEffectView: NSVisualEffectView {
       }
 
       if adjustWidth {
-        size.width = max(size.width, abs(s.frame.minX) + s.frame.width)
+        size.width = max(size.width, abs(s.frame.minX) + s.frame.width - padding)
       }
       if adjustHeight {
-        size.height = max(size.height, abs(s.frame.minY) + s.frame.height)
+        size.height = max(size.height, abs(s.frame.minY) + s.frame.height - padding)
       }
     }
     if adjustWidth {
