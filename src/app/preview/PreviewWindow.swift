@@ -8,13 +8,6 @@
 
 import Cocoa
 
-class SelectionView: NSView {
-  override func updateLayer() {
-    super.updateLayer()
-    self.layer!.backgroundColor = NSColor.textColor.withAlphaComponent(0.1).cgColor
-  }
-}
-
 class ContentView: NSView {
   override var isOpaque: Bool {
     return false
@@ -36,8 +29,10 @@ class PreviewWindow: NSWindow {
   let mainPadding: CGFloat = 30
   let cellMargin: CGFloat = 20
 
+  let backgroundView: NSVisualEffectView
   let applicationView: ResizingView
-  let selectionView: SelectionView
+  let selectionView: NSVisualEffectView
+
   var windowList: [QSWindow] = []
   var selected = 0
 
@@ -53,38 +48,42 @@ class PreviewWindow: NSWindow {
     contentRect: NSRect, styleMask style: NSWindow.StyleMask,
     backing backingStoreType: NSWindow.BackingStoreType, defer flag: Bool
   ) {
+    self.backgroundView = NSVisualEffectView()
     self.applicationView = ResizingView(withPadding: mainPadding)
-    self.selectionView = SelectionView()
+    self.selectionView = NSVisualEffectView()
 
     super.init(contentRect: contentRect, styleMask: style, backing: backingStoreType, defer: false)
 
     self.backgroundColor = .clear
     self.isOpaque = false
+
     self.collectionBehavior = .moveToActiveSpace
 
     self.setIsVisible(false)
 
     self.contentView = ContentView(frame: NSMakeRect(0, 0, 0, 0))
 
-    let effectView = NSVisualEffectView()
-    self.contentView!.addSubview(effectView)
-    effectView.material = .light
-    effectView.blendingMode = .behindWindow
-    effectView.state = .active
-    effectView.autoresizingMask = [.width, .height]
-    effectView.wantsLayer = true
-    effectView.layer!.cornerRadius = 16
+    backgroundView.state = .active
+    backgroundView.blendingMode = .behindWindow
+    backgroundView.autoresizingMask = [.width, .height]
+    backgroundView.wantsLayer = true
+    backgroundView.layer!.cornerRadius = 16
 
-    self.contentView!.addSubview(selectionView)
-    let selectionShadow = Shadow(0.2, .black, NSMakeSize(0, 0), 8)
-    selectionView.addShadow(selectionShadow)
+    self.contentView!.addSubview(backgroundView)
 
     selectionView.wantsLayer = true
     selectionView.layer!.cornerRadius = 8
+    selectionView.autoresizingMask = [.width, .height]
+    selectionView.wantsLayer = true
+    selectionView.state = .active
+    selectionView.blendingMode = .behindWindow
+    selectionView.material = .mediumLight
 
-    self.contentView!.addSubview(self.applicationView)
+    self.contentView!.addSubview(selectionView)
+
     applicationView.wantsLayer = true
     applicationView.layer?.masksToBounds = false
+    self.contentView!.addSubview(self.applicationView)
 
     trackingArea = NSTrackingArea.init(
       rect: self.applicationView.bounds, options: [.activeAlways, .mouseMoved], owner: self,
@@ -135,6 +134,18 @@ class PreviewWindow: NSWindow {
   }
 
   func show() {
+    // Get appeareance
+    let appearance = NSApp.effectiveAppearance
+    NSAppearance.current = appearance
+
+    if appearance.name == .darkAqua || appearance.name == .vibrantDark {
+      backgroundView.material = .dark
+      selectionView.material = .ultraDark
+    } else {
+      backgroundView.material = .light
+      selectionView.material = .mediumLight
+    }
+
     self.reloadApplications()
 
     self.setIsVisible(true)
@@ -226,16 +237,28 @@ class PreviewWindow: NSWindow {
     let subview = applicationView.subviews[selected]
 
     let selectionPadding = self.cellMargin / 2
+
     let newSize = NSMakeSize(
       subview.frame.size.width + selectionPadding * 2,
       subview.frame.size.height + selectionPadding * 2)
-
     let newOrigin = NSMakePoint(
       subview.frame.origin.x - selectionPadding,
       subview.frame.origin.y - selectionPadding)
 
-    selectionView.setFrameSize(newSize)
-    selectionView.setFrameOrigin(newOrigin)
+    let newSelectionFrame = CGRect(origin: newOrigin, size: newSize)
+    self.selectionView.frame = newSelectionFrame
+
+    let maskLayer = CAShapeLayer()
+    let bounds = self.backgroundView.bounds
+
+    // Path: full rect minus selection rect (creates a "hole")
+    let path = CGMutablePath()
+    path.addRect(bounds)
+    path.addRoundedRect(in: newSelectionFrame, cornerWidth: CGFloat(8), cornerHeight: CGFloat(8))
+    maskLayer.path = path
+    maskLayer.fillRule = .evenOdd
+
+    self.backgroundView.layer?.mask = maskLayer
   }
 
   func reloadApplications() {
@@ -243,11 +266,10 @@ class PreviewWindow: NSWindow {
 
     let orderedWindowsList = CGWindowListCopyWindowInfo(
       [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)
-    let orderedWindowInfo = CGWindow.createArrayFromList(orderedWindowsList)
-    print(orderedWindowInfo.count, "windows found")
 
-    var appPIDMap: [Int32: (NSRunningApplication, [AXUIElement])] = [:]
-    for app in applications {
+    var appPIDMap: [pid_t: NSRunningApplication] = [:]
+    var axWindowMap: [CGWindowID: AXUIElement] = [:]
+    for app: NSRunningApplication in applications {
       if app.activationPolicy != .regular { continue }
 
       let axApp = AXUIElementCreateApplication(app.processIdentifier)
@@ -255,12 +277,28 @@ class PreviewWindow: NSWindow {
       AXUIElementCopyAttributeValue(axApp, kAXWindowsAttribute as CFString, windowPtr)
       let axWindowList = windowPtr.pointee as? [AXUIElement] ?? []
       windowPtr.deallocate()
-      appPIDMap[app.processIdentifier] = (app, axWindowList)
+
+      appPIDMap[app.processIdentifier] = app
+      for axWindow in axWindowList {
+        let windowId = getWindowId(axWindow)
+        axWindowMap[windowId] = axWindow
+      }
     }
 
-    let filteredWindowInfo = orderedWindowInfo.filter { (window) -> Bool in
-      guard appPIDMap[window.processIdentifier] != nil else {
+    let orderedWindowInfo = CGWindow.createArrayFromList(orderedWindowsList)
+
+    windowList = orderedWindowInfo.filter { (window) -> Bool in
+      let app = appPIDMap[window.processIdentifier]
+      if app == nil {
         return false
+      }
+
+      // Ignore the current application
+      if app!.processIdentifier == ProcessInfo.processInfo.processIdentifier {
+        // ???
+        if window.windowName == "Item-0" {
+          return false
+        }
       }
 
       // filter the garbage
@@ -274,58 +312,13 @@ class PreviewWindow: NSWindow {
 
       return true
     }
+    .map { (window) -> QSWindow in
+      let axWindowMatch = axWindowMap[window.windowId()]
+      let app = appPIDMap[window.processIdentifier]!
 
-    var newWindowList = filteredWindowInfo.map { (window) -> QSWindow in
-      let axWindowList = appPIDMap[window.processIdentifier]!.1
-      var foundIndex: Int? = axWindowList.firstIndex(where: { axWindow in
-        let windowId = getWindowId(axWindow)
-        return windowId == window.windowNumber
-      })
-
-      var axWindowMatch: AXUIElement? = nil
-      if foundIndex != nil {
-        axWindowMatch = axWindowList[foundIndex!]
-        appPIDMap[window.processIdentifier]!.1.remove(at: foundIndex!)
-      }
-
-      let app = appPIDMap[window.processIdentifier]!.0
       return QSWindow(cgWindow: window, axWindow: axWindowMatch, app: app)
     }
 
-    for (i, window) in windowList.enumerated() {
-      if window.app.processIdentifier == ProcessInfo.processInfo.processIdentifier {
-        continue
-      }
-
-      var stillExists = false
-      var appHasAnotherWindow = false
-      for newWindow in newWindowList {
-        if window.cgWindow.windowNumber == newWindow.cgWindow.windowNumber {
-          stillExists = true
-          break
-        }
-        if window.app.processIdentifier == newWindow.app.processIdentifier {
-          appHasAnotherWindow = true
-        }
-      }
-
-      if stillExists || window.app.isTerminated {
-        continue
-      }
-
-      if appHasAnotherWindow {
-        continue
-      }
-
-      window.isClosed = true
-      if i < newWindowList.count {
-        newWindowList.insert(window, at: i == 0 ? 1 : i)
-      } else {
-        newWindowList.append(window)
-      }
-    }
-
-    windowList = newWindowList
     updateRender()
   }
 
@@ -337,7 +330,7 @@ class PreviewWindow: NSWindow {
     let screenWidth = NSScreen.main!.frame.width
 
     var xOffset: CGFloat = 0
-    let cellSize: CGFloat = CGFloat.init(PreferenceStore.shared.previewSize)
+    let cellSize: CGFloat = CGFloat.init(PreferenceStore.shared.iconSize)
     let breakAfter = Int((screenWidth - 500) / (cellSize + cellMargin))
 
     for (index, qsWindow) in windowList.enumerated() {
@@ -346,12 +339,13 @@ class PreviewWindow: NSWindow {
       }
 
       let row = index / breakAfter
-      let maxRow = windowList.count / breakAfter
+      let maxRow = (windowList.count - 1) / breakAfter
       let yOffset = CGFloat(maxRow - row) * (cellSize + cellMargin)
       let offset = NSMakePoint(xOffset, yOffset)
 
       let appPreview = NSView(
         frame: NSRect(origin: offset, size: NSMakeSize(cellSize, cellSize)))
+
       appPreview.wantsLayer = true
       appPreview.layer?.masksToBounds = false
       // appPreview.layer?.backgroundColor = .init(red: 255, green: 0, blue: 0, alpha: 1)
@@ -360,19 +354,27 @@ class PreviewWindow: NSWindow {
       nameLabel.preferredMaxLayoutWidth = cellSize
       nameLabel.lineBreakMode = .byTruncatingTail
       nameLabel.font = .systemFont(ofSize: 12, weight: .bold)
-      nameLabel.alignment = .center
+      nameLabel.textColor = .textColor.withAlphaComponent(0.75)
+      nameLabel.alignment = .left
       nameLabel.setFrameSize(NSMakeSize(cellSize, nameLabel.frame.height))
-      nameLabel.setFrameOrigin(NSMakePoint(0, 3))
+      nameLabel.setFrameOrigin(NSMakePoint(0, 2))
       appPreview.addSubview(nameLabel)
 
-      //
-      //            let appLabel = NSLabel(text: qsWindow.app.localizedName!)
-      //            appLabel.preferredMaxLayoutWidth = cellWidth
-      //            appLabel.lineBreakMode = .byTruncatingTail
-      //            appLabel.font = .systemFont(ofSize: 9, weight: .ultraLight)
-      //            appLabel.setFrameOrigin(NSMakePoint(5, nameLabel.frame.height - 5))
-      //            appLabel.textColor = .gray
-      //            appPreview.addSubview(appLabel)
+      let appLabel = NSLabel(text: qsWindow.app.localizedName!)
+      appLabel.preferredMaxLayoutWidth = cellSize
+      appLabel.lineBreakMode = .byTruncatingTail
+      appLabel.font = .systemFont(ofSize: 10, weight: .ultraLight)
+      appLabel.textColor = .textColor.withAlphaComponent(0.95)
+      appLabel.alignment = .left
+
+      // Set kerning (character spacing)
+      let appLabelAttrString = NSMutableAttributedString(string: qsWindow.app.localizedName!)
+      appLabelAttrString.addAttribute(
+        .kern, value: 0.5, range: NSRange(location: 0, length: appLabelAttrString.length))
+      appLabel.attributedStringValue = appLabelAttrString
+
+      appLabel.setFrameOrigin(NSMakePoint(0, nameLabel.frame.height))
+      appPreview.addSubview(appLabel)
 
       let iconY = nameLabel.frame.height + 15
       let iconView = NSImageView(
@@ -393,7 +395,7 @@ class PreviewWindow: NSWindow {
       if qsWindow.isClosed {
         appPreview.alphaValue = 0.6
       }
-      let shadow = Shadow(0.2, .black, NSMakeSize(0, 0), 10)
+      let shadow = Shadow(0.25, .black, NSMakeSize(0, 0), 12)
       iconView.addShadow(shadow)
 
       applicationView.addSubview(appPreview)
@@ -416,5 +418,7 @@ class PreviewWindow: NSWindow {
       options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited],
       owner: self, userInfo: nil)
     self.contentView?.addTrackingArea(trackingArea!)
+
   }
+
 }

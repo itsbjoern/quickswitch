@@ -9,39 +9,39 @@
 import Cocoa
 
 class MenuBar: NSMenu {
-    var preferences: PreferenceController
+  var preferences: PreferenceController
 
-    init() {
-        let del = NSApplication.shared.delegate as! AppDelegate
-        self.preferences = del.preferencesWindowController
+  init() {
+    let del = NSApplication.shared.delegate as! AppDelegate
+    self.preferences = del.preferencesWindowController
 
-        super.init(title: "QuickSwitcher")
-        let titleItem = NSMenuItem(
-            title: "QuickSwitcher v\(Bundle.main.infoDictionary!["CFBundleShortVersionString"]!)",
-            action: nil, keyEquivalent: "")
-        self.addItem(titleItem)
-        self.addItem(.separator())
+    super.init(title: "Quick Switch")
+    let titleItem = NSMenuItem(
+      title: "Quick Switch v\(Bundle.main.infoDictionary!["CFBundleShortVersionString"]!)",
+      action: nil, keyEquivalent: "")
+    self.addItem(titleItem)
+    self.addItem(.separator())
 
-        let openPrefsItem = NSMenuItem(
-            title: "Preferences", action: #selector(self.openPrefs), keyEquivalent: "")
-        openPrefsItem.target = self
-        self.addItem(openPrefsItem)
+    let openPrefsItem = NSMenuItem(
+      title: "Preferences", action: #selector(self.openPrefs), keyEquivalent: "")
+    openPrefsItem.target = self
+    self.addItem(openPrefsItem)
 
-        let closeItem = NSMenuItem(
-            title: "Quit", action: #selector(self.closeApp), keyEquivalent: "")
-        closeItem.target = self
-        self.addItem(closeItem)
-    }
+    let closeItem = NSMenuItem(
+      title: "Quit", action: #selector(self.closeApp), keyEquivalent: "")
+    closeItem.target = self
+    self.addItem(closeItem)
+  }
 
-    @objc func openPrefs() {
-        preferences.showWindow(nil)
-    }
+  @objc func openPrefs() {
+    preferences.showWindow(nil)
+  }
 
-    @objc func closeApp() {
-        exit(0)
-    }
+  @objc func closeApp() {
+    exit(0)
+  }
 
-    required init(coder decoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+  required init(coder decoder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
 }

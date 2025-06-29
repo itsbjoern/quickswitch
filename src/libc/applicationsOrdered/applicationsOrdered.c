@@ -8,6 +8,28 @@
 
 #include "ApplicationsOrdered.h"
 
+typedef uint32_t CGSConnectionID;
+
+extern CGSConnectionID CGSMainConnectionID(void);
+
+extern CGError SLSSetWindowBackgroundBlurRadius(int cid, uint32_t wid,
+                                                uint32_t radius);
+
+void setWindowBlurRadius(uint32_t windowId, uint32_t radius) {
+  // Get the main connection ID
+  CGSConnectionID connectionId = CGSMainConnectionID();
+  if (connectionId == 0) {
+    fprintf(stderr, "Failed to get main connection ID\n");
+    return;
+  }
+  CGError error =
+      SLSSetWindowBackgroundBlurRadius(connectionId, windowId, radius);
+  if (error != kCGErrorSuccess) {
+    fprintf(stderr, "Failed to set blur radius for window %u: %d\n", windowId,
+            error);
+  }
+}
+
 extern AXError _AXUIElementGetWindow(AXUIElementRef, CGWindowID *out);
 
 uint32_t getWindowId(AXUIElementRef window) {

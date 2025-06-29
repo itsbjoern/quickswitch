@@ -15,4 +15,6 @@
 CFArrayRef CopyLaunchedApplicationsInFrontToBackOrder(void);
 uint32_t getWindowId(AXUIElementRef window);
 
+void setWindowBlurRadius(uint32_t windowId, uint32_t radius);
+
 #endif /* ApplicationsOrdered_h */

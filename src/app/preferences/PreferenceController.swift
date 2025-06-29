@@ -9,28 +9,30 @@
 import Cocoa
 
 class PreferenceController: NSPreferenceController {
-    var psn = ProcessSerialNumber(highLongOfPSN: 0, lowLongOfPSN: UInt32(kCurrentProcess))
+  var psn = ProcessSerialNumber(highLongOfPSN: 0, lowLongOfPSN: UInt32(kCurrentProcess))
 
-    init() {
-        super.init(panes: [
-            StyleViewController(),
-            ConfigViewController(),
-        ])
-    }
+  init() {
+    super.init(
+      withName: Bundle.main.infoDictionary!["CFBundleName"] as! String,
+      panes: [
+        GeneralViewController(),
+        ConfigViewController(),
+      ])
+  }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
 
-    override func preferenceWindowWillShow(withPane pane: PreferencePane) {
-        let state = ProcessApplicationTransformState(kProcessTransformToForegroundApplication)
-        TransformProcessType(&self.psn, state)
-        self.window!.makeKeyAndOrderFront(nil)
-        self.window!.orderFrontRegardless()
-    }
+  override func preferenceWindowWillShow(withPane pane: PreferencePane) {
+    let state = ProcessApplicationTransformState(kProcessTransformToForegroundApplication)
+    TransformProcessType(&self.psn, state)
+    self.window!.makeKeyAndOrderFront(nil)
+    self.window!.orderFrontRegardless()
+  }
 
-    override func preferenceWindowWillClose(withPane pane: PreferencePane) {
-        let state = ProcessApplicationTransformState(kProcessTransformToUIElementApplication)
-        TransformProcessType(&self.psn, state)
-    }
+  override func preferenceWindowWillClose(withPane pane: PreferencePane) {
+    let state = ProcessApplicationTransformState(kProcessTransformToUIElementApplication)
+    TransformProcessType(&self.psn, state)
+  }
 }

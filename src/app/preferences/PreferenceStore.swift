@@ -72,17 +72,17 @@ class PreferenceStore {
     }
   }
 
-  private var _previewSize = 130
-  var previewSize: Int {
+  private var _iconSize = 130
+  var iconSize: Int {
     get {
-      return _previewSize
+      return _iconSize
     }
     set {
-      _previewSize = newValue
+      _iconSize = newValue
 
       DispatchQueue.main.async {
         UserDefaults.standard.set(
-          newValue, forKey: "\(Bundle.main.bundleIdentifier!).previewSize")
+          newValue, forKey: "\(Bundle.main.bundleIdentifier!).iconSize")
       }
     }
   }
@@ -130,9 +130,9 @@ class PreferenceStore {
         forKey: "\(Bundle.main.bundleIdentifier!).cycleBackwardsWithShift") as? Bool
       ?? _cycleBackwardsWithShift
 
-    _previewSize =
-      UserDefaults.standard.object(forKey: "\(Bundle.main.bundleIdentifier!).previewSize")
-      as? Int ?? _previewSize
+    _iconSize =
+      UserDefaults.standard.object(forKey: "\(Bundle.main.bundleIdentifier!).iconSize")
+      as? Int ?? _iconSize
 
     _keepClosedWindows =
       UserDefaults.standard.object(
