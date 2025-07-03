@@ -40,6 +40,14 @@ class PreviewWindow: NSWindow {
 
   var trackingArea: NSTrackingArea?
 
+  override var canBecomeKey: Bool {
+    return true
+  }
+
+  override var canBecomeMain: Bool {
+    return true
+  }
+
   convenience init() {
     self.init(
       contentRect: NSMakeRect(0, 0, 0, 0), styleMask: .borderless, backing: .buffered,
