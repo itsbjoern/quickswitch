@@ -15,6 +15,8 @@ class GeneralViewController: NSViewController, PreferencePane {
   let defaults = UserDefaults.standard
 
   let sliderLabel = NSLabel(text: "00000")
+  let resetPreviewButton = SequenceButton(
+    title: "", target: self, action: #selector(resetPreview))
 
   class FlippedView: NSView {
     override var isFlipped: Bool {
@@ -53,8 +55,20 @@ class GeneralViewController: NSViewController, PreferencePane {
     PreferenceStore.shared.iconSize = slider.integerValue
   }
 
-  override func viewDidLoad() {
+  func getPreviewResetButton() -> NSView {
+    resetPreviewButton.title = "Reset"
+    resetPreviewButton.sizeToFit()
+    resetPreviewButton.needsDisplay = true
+    resetPreviewButton.setFrameX(-5)
 
+    return resetPreviewButton
+  }
+
+  @objc func resetPreview(_ button: SequenceButton) {
+    PreferenceStore.shared.previewY = 0
+  }
+
+  override func viewDidLoad() {
     preferenceTable.addSubview(
       PreferencesCell(
         label:
@@ -91,6 +105,13 @@ class GeneralViewController: NSViewController, PreferencePane {
         label: "Icon Size",
         tooltip: "Adjust icon size.",
         control: self.getSizeSlider()
+      ))
+    preferenceTable.addSubview(
+      PreferencesCell(
+        label: "Reset Preview Position",
+        tooltip: "Reset the preview position.",
+        control: getPreviewResetButton(),
+        textOffset: 7
       ))
   }
 }

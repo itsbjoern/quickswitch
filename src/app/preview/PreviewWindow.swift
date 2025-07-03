@@ -29,6 +29,8 @@ class PreviewWindow: NSWindow {
   let mainPadding: CGFloat = 30
   let cellMargin: CGFloat = 20
 
+  var moveStopTimer: Timer?
+
   let backgroundView: NSVisualEffectView
   let applicationView: ResizingView
   let selectionView: NSVisualEffectView
@@ -54,6 +56,7 @@ class PreviewWindow: NSWindow {
 
     super.init(contentRect: contentRect, styleMask: style, backing: backingStoreType, defer: false)
 
+    self.isMovableByWindowBackground = true
     self.backgroundColor = .clear
     self.isOpaque = false
 
@@ -100,6 +103,31 @@ class PreviewWindow: NSWindow {
       self, selector: #selector(self.unhideWindow),
       name: NSWorkspace.didUnhideApplicationNotification, object: nil)
 
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(windowDidMove(_:)),
+      name: NSWindow.didMoveNotification,
+      object: self
+    )
+  }
+
+  deinit {
+    moveStopTimer?.invalidate()
+    NotificationCenter.default.removeObserver(self)
+    NSWorkspace.shared.notificationCenter.removeObserver(self)
+  }
+
+  @objc func windowDidMove(_ notification: Notification) {
+    moveStopTimer?.invalidate()
+
+    moveStopTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { [weak self] _ in
+      self?.windowDidStopMoving()
+    }
+  }
+
+  func windowDidStopMoving() {
+    let y = NSScreen.main!.frame.height / 2 - self.applicationView.frame.height / 2
+    PreferenceStore.shared.previewY = Int(y - self.frame.origin.y)
   }
 
   override func mouseExited(with event: NSEvent) {
@@ -125,14 +153,6 @@ class PreviewWindow: NSWindow {
     }
   }
 
-  override var canBecomeKey: Bool {
-    return true
-  }
-
-  override var canBecomeMain: Bool {
-    return true
-  }
-
   func show() {
     // Get appeareance
     let appearance = NSApp.effectiveAppearance
@@ -146,19 +166,18 @@ class PreviewWindow: NSWindow {
       selectionView.material = .mediumLight
     }
 
-    self.reloadApplications()
-
-    self.setIsVisible(true)
-
     DispatchQueue.main.async {
+      self.reloadApplications()
+      self.updateSelectionView()
       self.makeKeyAndOrderFront(nil)
       self.orderFrontRegardless()
     }
+    self.setIsVisible(true)
   }
 
   @objc func spaceChanged() {
     self.windowList = []
-    selected = 0
+    self.selected = 0
     self.hide(activate: false)
   }
 
@@ -183,10 +202,9 @@ class PreviewWindow: NSWindow {
   }
 
   func activateCurrent() {
-    print(windowList.count, selected)
-    let qsWindow = windowList[selected]
-    print("Activating \(qsWindow.cgWindow.windowName ?? qsWindow.app.localizedName!)")
-
+    // Clamp selectedIndex to [0, count-1] even for negative self.selected
+    let selectedIndex = ((self.selected % windowList.count) + windowList.count) % windowList.count
+    let qsWindow = windowList[selectedIndex]
     qsWindow.focus()
 
     if qsWindow.isClosed {
@@ -198,8 +216,14 @@ class PreviewWindow: NSWindow {
     qsWindow.isClosed = false
     qsWindow.isHidden = false
 
-    windowList.remove(at: selected)
+    windowList.remove(at: selectedIndex)
     windowList.insert(qsWindow, at: 0)
+
+    self.selected = 0
+    DispatchQueue.main.async {
+      self.updateSelectionView()
+      self.updateApplicationViews()
+    }
   }
 
   func mouseSelection(_ point: CGPoint) {
@@ -229,36 +253,8 @@ class PreviewWindow: NSWindow {
   }
 
   func moveSelection(toIndex index: Int) {
-    let count = applicationView.subviews.count
-    if count == 0 {
-      return
-    }
-    selected = (index % count + count) % count
-    let subview = applicationView.subviews[selected]
-
-    let selectionPadding = self.cellMargin / 2
-
-    let newSize = NSMakeSize(
-      subview.frame.size.width + selectionPadding * 2,
-      subview.frame.size.height + selectionPadding * 2)
-    let newOrigin = NSMakePoint(
-      subview.frame.origin.x - selectionPadding,
-      subview.frame.origin.y - selectionPadding)
-
-    let newSelectionFrame = CGRect(origin: newOrigin, size: newSize)
-    self.selectionView.frame = newSelectionFrame
-
-    let maskLayer = CAShapeLayer()
-    let bounds = self.backgroundView.bounds
-
-    // Path: full rect minus selection rect (creates a "hole")
-    let path = CGMutablePath()
-    path.addRect(bounds)
-    path.addRoundedRect(in: newSelectionFrame, cornerWidth: CGFloat(8), cornerHeight: CGFloat(8))
-    maskLayer.path = path
-    maskLayer.fillRule = .evenOdd
-
-    self.backgroundView.layer?.mask = maskLayer
+    self.selected = index
+    self.updateSelectionView()
   }
 
   func reloadApplications() {
@@ -319,10 +315,10 @@ class PreviewWindow: NSWindow {
       return QSWindow(cgWindow: window, axWindow: axWindowMatch, app: app)
     }
 
-    updateRender()
+    updateApplicationViews()
   }
 
-  func updateRender() {
+  func updateApplicationViews() {
     for subview in applicationView.subviews {
       subview.removeFromSuperview()
     }
@@ -402,12 +398,12 @@ class PreviewWindow: NSWindow {
       xOffset += appPreview.frame.width + cellMargin
     }
 
-    self.moveSelection(toIndex: 0)
     self.applicationView.resize()
+    let previewY: CGFloat = CGFloat(PreferenceStore.shared.previewY)
 
     // Center the application view in the window
     let x = NSScreen.main!.frame.width / 2 - self.applicationView.frame.width / 2
-    let y = NSScreen.main!.frame.height / 2 - self.applicationView.frame.height / 2
+    let y = NSScreen.main!.frame.height / 2 - self.applicationView.frame.height / 2 - previewY
     let newFrame = CGRect(origin: NSMakePoint(x, y), size: self.applicationView.frame.size)
     self.setFrame(newFrame, display: true)
 
@@ -418,7 +414,39 @@ class PreviewWindow: NSWindow {
       options: [.activeAlways, .mouseMoved, .mouseEnteredAndExited],
       owner: self, userInfo: nil)
     self.contentView?.addTrackingArea(trackingArea!)
-
   }
 
+  func updateSelectionView() {
+    let count = windowList.count
+    if count == 0 {
+      return
+    }
+    // Clamp selectedIndex to [0, count-1] even for negative self.selected
+    let selectedIndex = ((self.selected % windowList.count) + windowList.count) % windowList.count
+    let subview = applicationView.subviews[selectedIndex]
+
+    let selectionPadding = self.cellMargin / 2
+
+    let newSize = NSMakeSize(
+      subview.frame.size.width + selectionPadding * 2,
+      subview.frame.size.height + selectionPadding * 2)
+    let newOrigin = NSMakePoint(
+      subview.frame.origin.x - selectionPadding,
+      subview.frame.origin.y - selectionPadding)
+
+    let newSelectionFrame = CGRect(origin: newOrigin, size: newSize)
+    self.selectionView.frame = newSelectionFrame
+
+    let maskLayer = CAShapeLayer()
+    let bounds = self.backgroundView.bounds
+
+    // Path: full rect minus selection rect (creates a "hole")
+    let path = CGMutablePath()
+    path.addRect(bounds)
+    path.addRoundedRect(in: newSelectionFrame, cornerWidth: CGFloat(8), cornerHeight: CGFloat(8))
+    maskLayer.path = path
+    maskLayer.fillRule = .evenOdd
+
+    self.backgroundView.layer?.mask = maskLayer
+  }
 }

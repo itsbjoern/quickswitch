@@ -154,18 +154,6 @@ class ConfigViewController: NSViewController, PreferencePane {
     return wrapper
   }
 
-  func getKeepClosedWindows() -> NSView {
-    let checkbox = NSButton(
-      checkboxWithTitle: "", target: self, action: #selector(setKeepClosedWindow))
-    checkbox.state = PreferenceStore.shared.keepClosedWindows ? .on : .off
-    return checkbox
-  }
-
-  @objc func setKeepClosedWindow(_ checkbox: NSButton) {
-    let isOn = checkbox.state == .on
-    PreferenceStore.shared.keepClosedWindows = isOn
-  }
-
   func getEnableMouseSelection() -> NSView {
     let checkbox = NSButton(
       checkboxWithTitle: "", target: self, action: #selector(setEnableMouseSelection))
@@ -195,13 +183,6 @@ class ConfigViewController: NSViewController, PreferencePane {
         textOffset: 7
       ))
     preferenceTable.addSubview(PreferencesSeperator(text: "Other"))
-    preferenceTable.addSubview(
-      PreferencesCell(
-        label: "Keep running application windows",
-        tooltip:
-          "Enables reopening a window if the application is still running even if the window has been closed previously",
-        control: getKeepClosedWindows()
-      ))
     preferenceTable.addSubview(
       PreferencesCell(
         label: "Enable mouse selection",

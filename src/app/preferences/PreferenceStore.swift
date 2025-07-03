@@ -26,10 +26,10 @@ class PreferenceStore {
     set {
       _mainSequence = newValue
 
+      let delegate = NSApp.delegate as! AppDelegate
+      delegate.keyHandler!.removeEventListeners(key: .main)
+      delegate.addMainListener(forSequence: newValue)
       DispatchQueue.main.async {
-        let delegate = NSApp.delegate as! AppDelegate
-        delegate.keyHandler!.removeEventListeners(key: .main)
-        delegate.addMainListener(forSequence: newValue)
 
         UserDefaults.standard.set(
           newValue, forKey: "\(Bundle.main.bundleIdentifier!).mainSequence")
@@ -47,6 +47,9 @@ class PreferenceStore {
     set {
       _reverseSequence = newValue
 
+      let delegate = NSApp.delegate as! AppDelegate
+      delegate.keyHandler!.removeEventListeners(key: .mainReverse)
+      delegate.addReverseListener(forSequence: newValue)
       DispatchQueue.main.async {
         UserDefaults.standard.set(
           newValue, forKey: "\(Bundle.main.bundleIdentifier!).reverseSequence")
@@ -62,9 +65,9 @@ class PreferenceStore {
     set {
       _cycleBackwardsWithShift = newValue
 
+      let delegate = NSApp.delegate as! AppDelegate
+      delegate.cycleBackwardsWithShift = newValue
       DispatchQueue.main.async {
-        let delegate = NSApp.delegate as! AppDelegate
-        delegate.cycleBackwardsWithShift = newValue
 
         UserDefaults.standard.set(
           newValue, forKey: "\(Bundle.main.bundleIdentifier!).cycleBackwardsWithShift")
@@ -87,21 +90,6 @@ class PreferenceStore {
     }
   }
 
-  private var _keepClosedWindows = true
-  var keepClosedWindows: Bool {
-    get {
-      return _keepClosedWindows
-    }
-    set {
-      _keepClosedWindows = newValue
-
-      DispatchQueue.main.async {
-        UserDefaults.standard.set(
-          newValue, forKey: "\(Bundle.main.bundleIdentifier!).keepClosedWindows")
-      }
-    }
-  }
-
   private var _enableMouseSelection = true
   var enableMouseSelection: Bool {
     get {
@@ -113,6 +101,21 @@ class PreferenceStore {
       DispatchQueue.main.async {
         UserDefaults.standard.set(
           newValue, forKey: "\(Bundle.main.bundleIdentifier!).enableMouseSelection")
+      }
+    }
+  }
+
+  private var _previewY = 0
+  var previewY: Int {
+    get {
+      return _previewY
+    }
+    set {
+      _previewY = newValue
+
+      DispatchQueue.main.async {
+        UserDefaults.standard.set(
+          newValue, forKey: "\(Bundle.main.bundleIdentifier!).previewY")
       }
     }
   }
@@ -134,10 +137,9 @@ class PreferenceStore {
       UserDefaults.standard.object(forKey: "\(Bundle.main.bundleIdentifier!).iconSize")
       as? Int ?? _iconSize
 
-    _keepClosedWindows =
-      UserDefaults.standard.object(
-        forKey: "\(Bundle.main.bundleIdentifier!).keepClosedWindows") as? Bool
-      ?? _keepClosedWindows
+    _previewY =
+      UserDefaults.standard.object(forKey: "\(Bundle.main.bundleIdentifier!).previewY")
+      as? Int ?? _previewY
 
     _enableMouseSelection =
       UserDefaults.standard.object(
