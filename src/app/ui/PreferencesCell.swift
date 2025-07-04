@@ -1,6 +1,6 @@
 //
 //  PreferencesCell.swift
-//  quickswitcher
+//  vechseler
 //
 //  Created by Björn Friedrichs on 02/05/2019.
 //  Copyright © 2019 Björn Friedrichs. All rights reserved.
@@ -17,12 +17,14 @@ class PreferenceTable: NSView {
   func addSubview(_ view: PreferencesCell<NSView>) {
     super.addSubview(view)
     view.setFrameY(currOffset)
+    view.setFrameWidth(self.superview!.frame.width)
     currOffset += view.frame.height
   }
 
   override func addSubview(_ view: NSView) {
     super.addSubview(view)
     view.setFrameY(currOffset)
+    view.setFrameWidth(self.superview!.frame.width)
     currOffset += view.frame.height
   }
 }
@@ -106,43 +108,18 @@ class PreferencesCell<T: NSView>: ResizingView {
   }
 
   init(labelView: NSLabel, tooltip: String? = nil, control: T? = nil, textOffset: CGFloat = 0) {
-    let width: CGFloat = 400
     self.textOffset = textOffset
 
     self.control = control
 
-    let labelWidth: CGFloat
-    if control != nil {
-      labelWidth = width / 2
-    } else {
-      labelWidth = width
-    }
-
     labelView.toolTip = tooltip
     labelView.maximumNumberOfLines = 0  // Allow unlimited lines
-    labelView.preferredMaxLayoutWidth = labelWidth - extraPadding * 2
     labelView.lineBreakMode = .byWordWrapping
-
-    labelView.setFrameWidth(labelWidth - extraPadding * 2)
-    labelView.setFrameHeight(labelView.fittingSize.height)
     self.labelView = labelView
 
-    super.init(frame: NSMakeRect(0, 0, width, 1), withPadding: 0)
+    super.init(frame: NSMakeRect(0, 0, 1, 1), withPadding: 0)
     self.adjustWidth = false
 
-    if control != nil {
-      control!.setFrameOrigin(NSMakePoint(width / 2, extraPadding))
-      self.addSubview(control!)
-
-      labelView.setFrameOrigin(
-        NSMakePoint(
-          width / 2 - labelView.frame.width,
-          extraPadding + textOffset
-        ))
-    } else {
-      labelView.setFrameOrigin(
-        NSMakePoint(width / 2 - labelView.frame.width / 2, extraPadding + textOffset))
-    }
     self.addSubview(labelView)
   }
 
@@ -151,19 +128,46 @@ class PreferencesCell<T: NSView>: ResizingView {
       return
     }
 
-    self.setFrameWidth(superview.frame.width)
-    if control != nil {
-      control!.setFrameOrigin(NSMakePoint(self.frame.width / 2, extraPadding))
-      self.addSubview(control!)
+    let width: CGFloat
+    if self.control != nil {
+      width = superview.frame.width / 2
+    } else {
+      width = superview.frame.width
+    }
+    self.labelView.preferredMaxLayoutWidth = width - extraPadding * 2
+    self.labelView.lineBreakMode = .byWordWrapping
 
-      labelView.setFrameOrigin(
+    self.labelView.setFrameWidth(width - extraPadding * 2)
+    self.labelView.setFrameHeight(self.labelView.fittingSize.height)
+
+    if self.control != nil {
+      self.control!.setFrameOrigin(NSMakePoint(width / 2, extraPadding))
+      self.addSubview(self.control!)
+
+      self.labelView.setFrameOrigin(
         NSMakePoint(
-          self.frame.width / 2 - labelView.frame.width,
+          width / 2 - self.labelView.frame.width,
           extraPadding + textOffset
         ))
     } else {
-      labelView.setFrameOrigin(
-        NSMakePoint(self.frame.width / 2 - labelView.frame.width / 2, extraPadding + textOffset))
+      self.labelView.setFrameOrigin(
+        NSMakePoint(width / 2 - self.labelView.frame.width / 2, extraPadding + textOffset))
+    }
+
+    self.setFrameWidth(superview.frame.width)
+    if self.control != nil {
+      self.control!.setFrameOrigin(NSMakePoint(self.frame.width / 2, extraPadding))
+      self.addSubview(self.control!)
+
+      self.labelView.setFrameOrigin(
+        NSMakePoint(
+          self.frame.width / 2 - self.labelView.frame.width,
+          extraPadding + textOffset
+        ))
+    } else {
+      self.labelView.setFrameOrigin(
+        NSMakePoint(
+          self.frame.width / 2 - self.labelView.frame.width / 2, extraPadding + textOffset))
     }
   }
 

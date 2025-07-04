@@ -1,6 +1,6 @@
 //
 //  MenuBar.swift
-//  quickswitcher
+//  vechseler
 //
 //  Created by Björn Friedrichs on 28/04/2019.
 //  Copyright © 2019 Björn Friedrichs. All rights reserved.
@@ -15,9 +15,9 @@ class MenuBar: NSMenu {
     let del = NSApplication.shared.delegate as! AppDelegate
     self.preferences = del.preferencesWindowController
 
-    super.init(title: "Quick Switch")
+    super.init(title: "Vechsel")
     let titleItem = NSMenuItem(
-      title: "Quick Switch v\(Bundle.main.infoDictionary!["CFBundleShortVersionString"]!)",
+      title: "Vechsel v\(Bundle.main.infoDictionary!["CFBundleShortVersionString"]!)",
       action: nil, keyEquivalent: "")
     self.addItem(titleItem)
     self.addItem(.separator())

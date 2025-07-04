@@ -1,4 +1,4 @@
-# Quickswitcher
+# Vechsel
 
 Window based application switcher for macOS.
 

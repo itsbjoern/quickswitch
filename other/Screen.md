@@ -29,4 +29,4 @@ Height = 322;
 Width = 300;
 X = 0;
 Y = 542;
-}, "kCGWindowMemoryUsage": 1248, "kCGWindowOwnerName": Quick Switch, "kCGWindowSharingState": 0, "kCGWindowAlpha": 1]
+}, "kCGWindowMemoryUsage": 1248, "kCGWindowOwnerName": Vechsel, "kCGWindowSharingState": 0, "kCGWindowAlpha": 1]

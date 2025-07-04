@@ -1,6 +1,6 @@
 //
 //  KeyHandler.swift
-//  quickswitcher
+//  vechseler
 //
 //  Created by Björn Friedrichs on 01/05/2019.
 //  Copyright © 2019 Björn Friedrichs. All rights reserved.

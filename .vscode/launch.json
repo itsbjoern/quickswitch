@@ -11,36 +11,36 @@
       "type": "swift",
       "request": "launch",
       "args": [],
-      "cwd": "${workspaceFolder:quickswitch}",
-      "name": "Debug quickswitch",
-      "program": "${workspaceFolder:quickswitch}/.build/debug/quickswitch",
-      "preLaunchTask": "swift: Build Debug quickswitch"
+      "cwd": "${workspaceFolder:vechsel}",
+      "name": "Debug vechsel",
+      "program": "${workspaceFolder:vechsel}/.build/debug/vechsel",
+      "preLaunchTask": "swift: Build Debug vechsel"
     },
     {
       "type": "swift",
       "request": "launch",
       "args": [],
-      "cwd": "${workspaceFolder:quickswitch}",
-      "name": "Release quickswitch",
-      "program": "${workspaceFolder:quickswitch}/.build/release/quickswitch",
-      "preLaunchTask": "swift: Build Release quickswitch"
+      "cwd": "${workspaceFolder:vechsel}",
+      "name": "Release vechsel",
+      "program": "${workspaceFolder:vechsel}/.build/release/vechsel",
+      "preLaunchTask": "swift: Build Release vechsel"
     },
     {
       "type": "swift",
       "request": "launch",
       "args": [],
-      "cwd": "${workspaceFolder:quickswitch}",
+      "cwd": "${workspaceFolder:vechsel}",
       "name": "Debug Debug",
-      "program": "${workspaceFolder:quickswitch}/.build/debug/Debug",
+      "program": "${workspaceFolder:vechsel}/.build/debug/Debug",
       "preLaunchTask": "swift: Build Debug Debug"
     },
     {
       "type": "swift",
       "request": "launch",
       "args": [],
-      "cwd": "${workspaceFolder:quickswitch}",
+      "cwd": "${workspaceFolder:vechsel}",
       "name": "Release Debug",
-      "program": "${workspaceFolder:quickswitch}/.build/release/Debug",
+      "program": "${workspaceFolder:vechsel}/.build/release/Debug",
       "preLaunchTask": "swift: Build Release Debug"
     }
   ]

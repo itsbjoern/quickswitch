@@ -1,6 +1,6 @@
 //
 //  PreferencesStore.swift
-//  quickswitcher
+//  vechseler
 //
 //  Created by Björn Friedrichs on 02/05/2019.
 //  Copyright © 2019 Björn Friedrichs. All rights reserved.
@@ -83,7 +83,10 @@ class PreferenceStore {
     set {
       _iconSize = newValue
 
+      let delegate = NSApp.delegate as! AppDelegate
+
       DispatchQueue.main.async {
+        delegate.previewWindow.updateApplicationViews()
         UserDefaults.standard.set(
           newValue, forKey: "\(Bundle.main.bundleIdentifier!).iconSize")
       }

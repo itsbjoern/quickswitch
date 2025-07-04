@@ -4,7 +4,7 @@
 // import PackageDescription
 
 // let package = Package(
-//   name: "quickswitch",
+//   name: "vechsel",
 //   platforms: [
 //     // Platforms declare which platforms this package can be used on.
 //     .macOS(.v10_14)  // macOS 10.14 is the minimum supported version
@@ -14,7 +14,7 @@
 //     // Targets are the basic building blocks of a package. A target can define a module or a test suite.
 //     // Targets can depend on other targets in this package, and on products in packages which this package depends on.
 //     .target(
-//       name: "quickswitch",
+//       name: "vechsel",
 
 //       dependencies: ["ApplicationsOrdered", "SkyLight"],
 //       path: "src/app"

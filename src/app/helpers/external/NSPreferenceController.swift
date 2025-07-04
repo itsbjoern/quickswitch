@@ -36,7 +36,6 @@ class NSPreferenceController: NSWindowController, NSWindowDelegate, NSToolbarDel
   PreferenceWindowDelegate
 {
   fileprivate let panes: [PreferencePane]
-  fileprivate let paneSizes: [NSSize]
   fileprivate var control: NSSegmentedControl?
 
   fileprivate var isAnimating = false
@@ -47,11 +46,8 @@ class NSPreferenceController: NSWindowController, NSWindowDelegate, NSToolbarDel
 
   init(withName: String, panes: [PreferencePane]) {
     self.panes = panes
-    self.paneSizes = panes.map({ (pane) -> NSSize in
-      pane.view.frame.size
-    })
 
-    let size = self.paneSizes[0]
+    let size = self.panes.first!.view.frame.size
     let origin = NSMakePoint(
       NSScreen.main!.frame.width / 2 - size.width / 2,
       NSScreen.main!.frame.height / 2 - size.height / 2
@@ -156,8 +152,8 @@ class NSPreferenceController: NSWindowController, NSWindowDelegate, NSToolbarDel
   }
 
   internal func getWindowRect(comparedTo otherIndex: Int) -> NSRect {
-    let oldContentSize = self.paneSizes[otherIndex]
-    let newContentSize = self.paneSizes[index]
+    let oldContentSize = self.panes[otherIndex].view.frame.size
+    let newContentSize = self.panes[index].view.frame.size
 
     let frameSize = self.window!.frame.size
     let titleSize = NSMakeSize(
@@ -166,6 +162,7 @@ class NSPreferenceController: NSWindowController, NSWindowDelegate, NSToolbarDel
     let newFrameSize = NSMakeSize(
       titleSize.width + newContentSize.width,
       titleSize.height + newContentSize.height)
+
     let origin = NSMakePoint(
       self.window!.frame.origin.x,
       self.window!.frame.origin.y + oldContentSize.height - newContentSize.height
@@ -178,13 +175,13 @@ class NSPreferenceController: NSWindowController, NSWindowDelegate, NSToolbarDel
     if index == control.indexOfSelectedItem {
       return
     }
-    if isAnimating {
+    if self.isAnimating {
       control.selectSegment(withTag: index)
       return
     }
     let oldIndex = index
     self._index = control.indexOfSelectedItem
-    isAnimating = true
+    self.isAnimating = true
 
     let oldController = self.panes[oldIndex]
     let newController = self.panes[index]
@@ -192,13 +189,15 @@ class NSPreferenceController: NSWindowController, NSWindowDelegate, NSToolbarDel
     oldController.paneWillDisappear()
     newController.paneWillAppear(inWindowController: self)
 
-    NSAnimationContext.runAnimationGroup(
-      { _ in
-        NSAnimationContext.current.duration = 0.5
-        window!.contentView = nil
+    let newRect = getWindowRect(comparedTo: oldIndex)
 
-        let newRect = getWindowRect(comparedTo: oldIndex)
-        self.window!.animator().setFrame(newRect, display: true, animate: true)
+    // Animate window frame, then swap contentViewController after animation completes
+    NSAnimationContext.runAnimationGroup(
+      { context in
+        context.duration = 0.5
+        window!.contentView = nil
+        self.window!.animator().setFrame(
+          newRect, display: true, animate: true)
       },
       completionHandler: {
         self._index = control.indexOfSelectedItem
@@ -207,5 +206,8 @@ class NSPreferenceController: NSWindowController, NSWindowDelegate, NSToolbarDel
         newController.paneDidAppear(inWindowController: self)
         self.isAnimating = false
       })
+
+    // Force the window to stay key and front during the animation
+    self.window?.makeKeyAndOrderFront(nil)
   }
 }

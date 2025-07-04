@@ -1,5 +1,5 @@
 build:
-	xcodebuild -project quickswitch.xcodeproj
+	xcodebuild -project vechsel.xcodeproj
 
 run:
-	./build/Release/quickswitch.app/Contents/MacOS/quickswitch
+	./build/Release/vechsel.app/Contents/MacOS/vechsel

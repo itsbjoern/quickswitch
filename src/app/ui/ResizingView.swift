@@ -1,6 +1,6 @@
 //
 //  ResizingView.swift
-//  quickswitcher
+//  vechseler
 //
 //  Created by Björn Friedrichs on 27/04/2019.
 //  Copyright © 2019 Björn Friedrichs. All rights reserved.

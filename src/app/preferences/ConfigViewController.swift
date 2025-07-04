@@ -1,6 +1,6 @@
 //
 //  ConfigViewController.swift
-//  quickswitcher
+//  vechseler
 //
 //  Created by Björn Friedrichs on 04/05/2019.
 //  Copyright © 2019 Björn Friedrichs. All rights reserved.
@@ -29,26 +29,128 @@ class SequenceButton: NSButton {
 
 class ConfigViewController: NSViewController, PreferencePane {
   var preferenceTabTitle = "Config"
-  let preferenceTable = PreferenceTable()
 
-  let defaults = UserDefaults.standard
-  let mainSequenceButton = SequenceButton(
-    title: "", target: self, action: #selector(mainSequenceChange))
-  let reverseSequenceButton = SequenceButton(
-    title: "", target: self, action: #selector(reverseSequenceChange))
+  // Buttons need to be properties so they can be updated
+  let mainSequenceButton = SequenceButton(title: "", target: nil, action: nil)
+  let reverseSequenceButton = SequenceButton(title: "", target: nil, action: nil)
   var recordingButton: SequenceButton?
 
-  class FlippedView: NSView {
-    override var isFlipped: Bool {
-      return true
-    }
-  }
-
+  // Remove FlippedView, use NSStackView as root view
   override func loadView() {
-    let view = FlippedView(frame: NSMakeRect(0, 0, 500, 300))
-    view.addSubview(preferenceTable)
-    preferenceTable.setFrameSize(view.frame.size)
-    self.view = view
+    let mainStack = NSStackView()
+    mainStack.orientation = .vertical
+    mainStack.spacing = 18
+    mainStack.alignment = .leading
+    mainStack.translatesAutoresizingMaskIntoConstraints = false
+
+    let container = NSView()
+    container.translatesAutoresizingMaskIntoConstraints = false
+    container.addSubview(mainStack)
+
+    NSLayoutConstraint.activate([
+      mainStack.topAnchor.constraint(equalTo: container.topAnchor, constant: 20),
+      mainStack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
+      mainStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
+      mainStack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -20),
+    ])
+
+    // Section: Keys
+    let keysLabel = NSLabel(text: "Keys")
+    keysLabel.font = NSFont.boldSystemFont(ofSize: 13)
+    keysLabel.textColor = .labelColor
+    mainStack.addArrangedSubview(keysLabel)
+
+    // Cycle Forwards
+    let mainSeqStack = NSStackView()
+    mainSeqStack.orientation = .horizontal
+    mainSeqStack.spacing = 8
+    mainSeqStack.alignment = .centerY
+
+    let mainSeqLabel = NSLabel(text: "Cycle Forwards")
+    mainSeqLabel.font = NSFont.systemFont(ofSize: 13)
+    mainSeqLabel.textColor = .labelColor
+    mainSeqLabel.toolTip = "Key sequence used to activate and cycle forwards."
+
+    let mainSequence = PreferenceStore.shared.mainSequence
+    mainSequenceButton.title = sequenceToString(mainSequence)
+    mainSequenceButton.sizeToFit()
+    mainSequenceButton.needsDisplay = true
+    mainSequenceButton.setFrameX(-5)
+    mainSequenceButton.target = self
+    mainSequenceButton.action = #selector(mainSequenceChange(_:))
+
+    mainSeqStack.addArrangedSubview(mainSeqLabel)
+    mainSeqStack.addArrangedSubview(mainSequenceButton)
+    mainStack.addArrangedSubview(mainSeqStack)
+
+    // Cycle Backwards
+    let reverseSeqStack = NSStackView()
+    reverseSeqStack.orientation = .horizontal
+    reverseSeqStack.spacing = 8
+    reverseSeqStack.alignment = .centerY
+
+    let reverseSeqLabel = NSLabel(text: "Cycle Backwards")
+    reverseSeqLabel.font = NSFont.systemFont(ofSize: 13)
+    reverseSeqLabel.textColor = .labelColor
+    reverseSeqLabel.toolTip = "Key sequence used to activate and cycle backwards."
+
+    let reverseSequence = PreferenceStore.shared.reverseSequence
+    reverseSequenceButton.title = sequenceToString(reverseSequence)
+    reverseSequenceButton.sizeToFit()
+    reverseSequenceButton.needsDisplay = true
+    reverseSequenceButton.setFrameX(-5)
+    reverseSequenceButton.target = self
+    reverseSequenceButton.action = #selector(reverseSequenceChange(_:))
+
+    let shiftCheckbox = NSButton(
+      checkboxWithTitle: "Enable ⌘ + ⇧ when activated.", target: self,
+      action: #selector(setCycleShift(_:)))
+    shiftCheckbox.state = PreferenceStore.shared.cycleBackwardsWithShift ? .on : .off
+
+    let reverseButtonStack = NSStackView()
+    reverseButtonStack.orientation = .vertical
+    reverseButtonStack.spacing = 2
+    reverseButtonStack.alignment = .leading
+    reverseButtonStack.addArrangedSubview(reverseSequenceButton)
+    reverseButtonStack.addArrangedSubview(shiftCheckbox)
+
+    reverseSeqStack.addArrangedSubview(reverseSeqLabel)
+    reverseSeqStack.addArrangedSubview(reverseButtonStack)
+    mainStack.addArrangedSubview(reverseSeqStack)
+
+    // Section: Other
+    let otherLabel = NSLabel(text: "Other")
+    otherLabel.font = NSFont.boldSystemFont(ofSize: 13)
+    otherLabel.textColor = .labelColor
+    mainStack.addArrangedSubview(otherLabel)
+
+    // Enable mouse selection
+    let mouseStack = NSStackView()
+    mouseStack.orientation = .horizontal
+    mouseStack.spacing = 8
+    mouseStack.alignment = .centerY
+
+    let mouseLabel = NSLabel(text: "Enable mouse selection")
+    mouseLabel.font = NSFont.systemFont(ofSize: 13)
+    mouseLabel.textColor = .labelColor
+    mouseLabel.toolTip = "Select windows by hovering with the mouse"
+
+    let mouseCheckbox = NSButton(
+      checkboxWithTitle: "", target: self, action: #selector(setEnableMouseSelection(_:)))
+    mouseCheckbox.state = PreferenceStore.shared.enableMouseSelection ? .on : .off
+
+    mouseStack.addArrangedSubview(mouseLabel)
+    mouseStack.addArrangedSubview(mouseCheckbox)
+    mainStack.addArrangedSubview(mouseStack)
+
+    self.view = container
+
+    // Ensure the container view resizes to fit its content
+    // This makes the view auto-size to its children + padding
+    let preferredContentSize = mainStack.fittingSize.applying(
+      .init(translationX: 40, y: 40)
+    )
+    container.setFrameSize(preferredContentSize)
   }
 
   func sequenceToString(_ sequence: [Int64]) -> String {
@@ -71,11 +173,7 @@ class ConfigViewController: NSViewController, PreferencePane {
     button.setRecording()
 
     keyHandler!.recordSequence { (sequence) in
-      //            let nums: [NSNumber] = sequence.map({ (i) -> NSNumber in
-      //                return NSNumber(value: i)
-      //            })
       button.setNormal()
-
       PreferenceStore.shared.mainSequence = sequence
       button.title = self.sequenceToString(sequence)
       button.sizeToFit()
@@ -91,11 +189,7 @@ class ConfigViewController: NSViewController, PreferencePane {
     button.setRecording()
 
     keyHandler!.recordSequence { (sequence) in
-      //            let nums: [NSNumber] = sequence.map({ (i) -> NSNumber in
-      //                return NSNumber(value: i)
-      //            })
       button.setNormal()
-
       PreferenceStore.shared.reverseSequence = sequence
       button.title = self.sequenceToString(sequence)
       button.sizeToFit()
@@ -114,51 +208,9 @@ class ConfigViewController: NSViewController, PreferencePane {
     button.setNormal()
   }
 
-  func getMainCell() -> NSView {
-    let wrapper = ResizingView()
-
-    let sequence: [Int64] = PreferenceStore.shared.mainSequence
-    let sequenceString = sequenceToString(sequence)
-    mainSequenceButton.title = sequenceString
-    mainSequenceButton.sizeToFit()
-    mainSequenceButton.needsDisplay = true
-    mainSequenceButton.setFrameX(-5)
-
-    wrapper.addSubview(mainSequenceButton)
-    return wrapper
-  }
-
   @objc func setCycleShift(_ checkbox: NSButton) {
     let isOn = checkbox.state == .on
     PreferenceStore.shared.cycleBackwardsWithShift = isOn
-  }
-
-  func getReverseCell() -> NSView {
-    let sequence: [Int64] = PreferenceStore.shared.reverseSequence
-    let sequenceString = sequenceToString(sequence)
-
-    reverseSequenceButton.title = sequenceString
-    reverseSequenceButton.sizeToFit()
-    reverseSequenceButton.needsDisplay = true
-    reverseSequenceButton.setFrameX(-5)
-
-    let checkbox = NSButton(
-      checkboxWithTitle: "Enable ⌘ + ⇧ when activated.", target: self,
-      action: #selector(setCycleShift))
-    checkbox.state = PreferenceStore.shared.cycleBackwardsWithShift ? .on : .off
-    reverseSequenceButton.setFrameY(reverseSequenceButton.frame.height - 10)
-
-    let wrapper = ResizingView()
-    wrapper.addSubview(reverseSequenceButton)
-    wrapper.addSubview(checkbox)
-    return wrapper
-  }
-
-  func getEnableMouseSelection() -> NSView {
-    let checkbox = NSButton(
-      checkboxWithTitle: "", target: self, action: #selector(setEnableMouseSelection))
-    checkbox.state = PreferenceStore.shared.enableMouseSelection ? .on : .off
-    return checkbox
   }
 
   @objc func setEnableMouseSelection(_ checkbox: NSButton) {
@@ -166,28 +218,4 @@ class ConfigViewController: NSViewController, PreferencePane {
     PreferenceStore.shared.enableMouseSelection = isOn
   }
 
-  override func viewDidLoad() {
-    preferenceTable.addSubview(PreferencesSeperator(text: "Keys"))
-    preferenceTable.addSubview(
-      PreferencesCell(
-        label: "Cycle Forwards",
-        tooltip: "Key sequence used to activate and cycle forwards.",
-        control: getMainCell(),
-        textOffset: 7
-      ))
-    preferenceTable.addSubview(
-      PreferencesCell(
-        label: "Cycle Backwards",
-        tooltip: "Key sequence used to activate and cycle backwards.",
-        control: getReverseCell(),
-        textOffset: 7
-      ))
-    preferenceTable.addSubview(PreferencesSeperator(text: "Other"))
-    preferenceTable.addSubview(
-      PreferencesCell(
-        label: "Enable mouse selection",
-        tooltip: "Select windows by hovering with the mouse",
-        control: getEnableMouseSelection()
-      ))
-  }
 }

@@ -12,8 +12,8 @@
 	"argv": [
 		"/opt/homebrew/bin/xcode-build-server"
 	],
-	"workspace": "/Users/bjoern/code/quickswitch/src/quickswitch/quickswitch.xcodeproj/project.xcworkspace",
-	"build_root": "/Users/bjoern/Library/Developer/Xcode/DerivedData/quickswitch-cbduagvnbunvpxftiduwtytytwby",
-	"scheme": "quickswitch",
+	"workspace": "/Users/bjoern/code/vechsel/src/vechsel/vechsel.xcodeproj/project.xcworkspace",
+	"build_root": "/Users/bjoern/Library/Developer/Xcode/DerivedData/vechsel-cbduagvnbunvpxftiduwtytytwby",
+	"scheme": "vechsel",
 	"kind": "xcode"
 }
