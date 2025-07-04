@@ -1,6 +1,6 @@
 //
 //  NSView.swift
-//  quickswitcher
+//  vechseler
 //
 //  Created by Björn Friedrichs on 02/05/2019.
 //  Copyright © 2019 Björn Friedrichs. All rights reserved.

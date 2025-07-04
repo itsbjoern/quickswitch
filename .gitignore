@@ -2,6 +2,5 @@
 /.build
 build
 /Packages
-/*.xcodeproj
 !.vscode
 .swiftpm
