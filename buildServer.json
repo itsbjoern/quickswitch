@@ -12,8 +12,8 @@
 	"argv": [
 		"/opt/homebrew/bin/xcode-build-server"
 	],
-	"workspace": "/Users/bjoern/code/vechsel/src/vechsel/vechsel.xcodeproj/project.xcworkspace",
-	"build_root": "/Users/bjoern/Library/Developer/Xcode/DerivedData/vechsel-cbduagvnbunvpxftiduwtytytwby",
-	"scheme": "vechsel",
+	"workspace": "/Users/bjoern/code/vechsel/src/vechsel/Vechsel.xcodeproj/project.xcworkspace",
+	"build_root": "/Users/bjoern/Library/Developer/Xcode/DerivedData/Vechsel-hkkhbwqhrbbpfledsvmrzcgdorzk",
+	"scheme": "Vechsel",
 	"kind": "xcode"
 }

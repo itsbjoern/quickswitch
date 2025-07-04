@@ -78,48 +78,29 @@ class NSPreferenceController: NSWindowController, NSWindowDelegate, NSToolbarDel
   internal override func showWindow(_ sender: Any?) {
     self.preferenceWindowWillShow(withPane: panes[index])
     self.panes[index].paneWillAppear(inWindowController: self)
+    self.panes[index].paneDidAppear(inWindowController: self)
+
+    // Reset window origin after first load
+    let size = window!.frame.size
+    let origin = NSMakePoint(
+      NSScreen.main!.frame.width / 2 - size.width / 2,
+      NSScreen.main!.frame.height / 2 - size.height / 2
+    )
+    window!.setFrameOrigin(origin)
+
     NSApp.activate(ignoringOtherApps: true)
     super.showWindow(sender)
-    self.panes[index].paneDidAppear(inWindowController: self)
-    self.window?.makeKeyAndOrderFront(sender)
+    self.window!.makeKeyAndOrderFront(nil)
+    self.window!.orderFrontRegardless()
   }
 
   internal func windowWillClose(_ notification: Notification) {
     self.panes[index].paneWillDisappear()
     self.preferenceWindowWillClose(withPane: panes[index])
-    self.panes[index].paneDidDisappear()
   }
 
   func preferenceWindowWillShow(withPane pane: PreferencePane) {}
   func preferenceWindowWillClose(withPane pane: PreferencePane) {}
-
-  /// Set the current tab to the specified index.
-  func setTab(index: Int, animated: Bool = true) {
-    guard index < self.panes.count else {
-      return
-    }
-
-    if !animated {
-      let oldController = self.panes[_index]
-      let newController = self.panes[index]
-
-      oldController.paneWillDisappear()
-      newController.paneWillAppear(inWindowController: self)
-
-      let newFrame = getWindowRect(comparedTo: index)
-      window!.setFrame(newFrame, display: true)
-
-      control!.selectSegment(withTag: index)
-      contentViewController = newController
-      _index = index
-
-      oldController.paneDidDisappear()
-      newController.paneDidAppear(inWindowController: self)
-    } else if !isAnimating {
-      self.control!.selectSegment(withTag: index)
-      self.changeTab(self.control!)
-    }
-  }
 
   internal func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
     return [toolbar.centeredItemIdentifier!]
@@ -153,7 +134,7 @@ class NSPreferenceController: NSWindowController, NSWindowDelegate, NSToolbarDel
 
   internal func getWindowRect(comparedTo otherIndex: Int) -> NSRect {
     let oldContentSize = self.panes[otherIndex].view.frame.size
-    let newContentSize = self.panes[index].view.frame.size
+    let newContentSize = self.panes[index].view.fittingSize
 
     let frameSize = self.window!.frame.size
     let titleSize = NSMakeSize(
@@ -189,13 +170,13 @@ class NSPreferenceController: NSWindowController, NSWindowDelegate, NSToolbarDel
     oldController.paneWillDisappear()
     newController.paneWillAppear(inWindowController: self)
 
+    window!.contentView = nil
     let newRect = getWindowRect(comparedTo: oldIndex)
 
     // Animate window frame, then swap contentViewController after animation completes
     NSAnimationContext.runAnimationGroup(
       { context in
         context.duration = 0.5
-        window!.contentView = nil
         self.window!.animator().setFrame(
           newRect, display: true, animate: true)
       },

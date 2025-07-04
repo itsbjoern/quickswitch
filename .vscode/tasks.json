@@ -6,7 +6,7 @@
       "action": "launch",
       "label": "sweetpad: launch",
       "detail": "Build and launch the app (Debug)",
-      "scheme": "vechsel",
+      "scheme": "Vechsel",
       "configuration": "Debug",
       "isBackground": true, // Important: lets VS Code know when the task is ready
       "problemMatcher": [
@@ -21,7 +21,7 @@
       "action": "launch",
       "label": "sweetpad: launch release",
       "detail": "Build and launch the app (Release)",
-      "scheme": "vechsel",
+      "scheme": "Vechsel",
       "configuration": "Release",
       "isBackground": true, // Important: lets VS Code know when the task is ready
       "problemMatcher": [

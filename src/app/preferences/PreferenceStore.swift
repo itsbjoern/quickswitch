@@ -75,7 +75,7 @@ class PreferenceStore {
     }
   }
 
-  private var _iconSize = 130
+  private var _iconSize = 100
   var iconSize: Int {
     get {
       return _iconSize

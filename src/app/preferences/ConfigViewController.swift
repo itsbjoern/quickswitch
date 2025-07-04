@@ -35,30 +35,21 @@ class ConfigViewController: NSViewController, PreferencePane {
   let reverseSequenceButton = SequenceButton(title: "", target: nil, action: nil)
   var recordingButton: SequenceButton?
 
-  // Remove FlippedView, use NSStackView as root view
   override func loadView() {
+    print("Loading ConfigViewController")
+    // Container view for padding
+    let container = NSView()
+    container.translatesAutoresizingMaskIntoConstraints = false
+
+    // Main vertical stack
     let mainStack = NSStackView()
     mainStack.orientation = .vertical
-    mainStack.spacing = 18
+    mainStack.spacing = 16
     mainStack.alignment = .leading
     mainStack.translatesAutoresizingMaskIntoConstraints = false
 
-    let container = NSView()
-    container.translatesAutoresizingMaskIntoConstraints = false
-    container.addSubview(mainStack)
-
-    NSLayoutConstraint.activate([
-      mainStack.topAnchor.constraint(equalTo: container.topAnchor, constant: 20),
-      mainStack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
-      mainStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
-      mainStack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -20),
-    ])
-
     // Section: Keys
-    let keysLabel = NSLabel(text: "Keys")
-    keysLabel.font = NSFont.boldSystemFont(ofSize: 13)
-    keysLabel.textColor = .labelColor
-    mainStack.addArrangedSubview(keysLabel)
+    mainStack.addArrangedSubview(makeSectionHeader(title: "Keys"))
 
     // Cycle Forwards
     let mainSeqStack = NSStackView()
@@ -67,7 +58,7 @@ class ConfigViewController: NSViewController, PreferencePane {
     mainSeqStack.alignment = .centerY
 
     let mainSeqLabel = NSLabel(text: "Cycle Forwards")
-    mainSeqLabel.font = NSFont.systemFont(ofSize: 13)
+    mainSeqLabel.font = NSFont.systemFont(ofSize: 13, weight: .medium)
     mainSeqLabel.textColor = .labelColor
     mainSeqLabel.toolTip = "Key sequence used to activate and cycle forwards."
 
@@ -90,7 +81,7 @@ class ConfigViewController: NSViewController, PreferencePane {
     reverseSeqStack.alignment = .centerY
 
     let reverseSeqLabel = NSLabel(text: "Cycle Backwards")
-    reverseSeqLabel.font = NSFont.systemFont(ofSize: 13)
+    reverseSeqLabel.font = NSFont.systemFont(ofSize: 13, weight: .medium)
     reverseSeqLabel.textColor = .labelColor
     reverseSeqLabel.toolTip = "Key sequence used to activate and cycle backwards."
 
@@ -103,13 +94,13 @@ class ConfigViewController: NSViewController, PreferencePane {
     reverseSequenceButton.action = #selector(reverseSequenceChange(_:))
 
     let shiftCheckbox = NSButton(
-      checkboxWithTitle: "Enable ⌘ + ⇧ when activated.", target: self,
+      checkboxWithTitle: "Enable backwards cycling with ⌘ + ⇧ while activated.", target: self,
       action: #selector(setCycleShift(_:)))
     shiftCheckbox.state = PreferenceStore.shared.cycleBackwardsWithShift ? .on : .off
 
     let reverseButtonStack = NSStackView()
     reverseButtonStack.orientation = .vertical
-    reverseButtonStack.spacing = 2
+    reverseButtonStack.spacing = 6
     reverseButtonStack.alignment = .leading
     reverseButtonStack.addArrangedSubview(reverseSequenceButton)
     reverseButtonStack.addArrangedSubview(shiftCheckbox)
@@ -119,10 +110,7 @@ class ConfigViewController: NSViewController, PreferencePane {
     mainStack.addArrangedSubview(reverseSeqStack)
 
     // Section: Other
-    let otherLabel = NSLabel(text: "Other")
-    otherLabel.font = NSFont.boldSystemFont(ofSize: 13)
-    otherLabel.textColor = .labelColor
-    mainStack.addArrangedSubview(otherLabel)
+    mainStack.addArrangedSubview(makeSectionHeader(title: "Other"))
 
     // Enable mouse selection
     let mouseStack = NSStackView()
@@ -131,7 +119,7 @@ class ConfigViewController: NSViewController, PreferencePane {
     mouseStack.alignment = .centerY
 
     let mouseLabel = NSLabel(text: "Enable mouse selection")
-    mouseLabel.font = NSFont.systemFont(ofSize: 13)
+    mouseLabel.font = NSFont.systemFont(ofSize: 13, weight: .medium)
     mouseLabel.textColor = .labelColor
     mouseLabel.toolTip = "Select windows by hovering with the mouse"
 
@@ -143,14 +131,16 @@ class ConfigViewController: NSViewController, PreferencePane {
     mouseStack.addArrangedSubview(mouseCheckbox)
     mainStack.addArrangedSubview(mouseStack)
 
+    container.addSubview(mainStack)
     self.view = container
 
-    // Ensure the container view resizes to fit its content
-    // This makes the view auto-size to its children + padding
-    let preferredContentSize = mainStack.fittingSize.applying(
-      .init(translationX: 40, y: 40)
-    )
-    container.setFrameSize(preferredContentSize)
+    // Padding: 20pt on all sides
+    NSLayoutConstraint.activate([
+      mainStack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
+      mainStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
+      mainStack.topAnchor.constraint(equalTo: container.topAnchor, constant: 20),
+      mainStack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -20),
+    ])
   }
 
   func sequenceToString(_ sequence: [Int64]) -> String {

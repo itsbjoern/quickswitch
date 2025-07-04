@@ -32,33 +32,46 @@ class GeneralViewController: NSViewController, PreferencePane {
   // Store references to preview boxes for selection highlighting
   var previewBoxes: [NSBox] = []
 
+  // Custom label with pointing hand cursor
+  private class PointingHandLabel: NSLabel {
+    override func resetCursorRects() {
+      self.addCursorRect(self.bounds, cursor: .pointingHand)
+    }
+  }
+
   override func loadView() {
     self.previewBoxes = []
+
+    // Container view to ensure edgeInsets are respected
+    let container = NSView()
+    container.translatesAutoresizingMaskIntoConstraints = false
 
     // Card-like container for the whole preferences pane
     let mainStack = NSStackView()
     mainStack.orientation = .vertical
-    mainStack.spacing = 28
+    mainStack.spacing = 16
     mainStack.alignment = .leading
-    mainStack.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
     mainStack.translatesAutoresizingMaskIntoConstraints = false
 
-    // Info label
+    // Info label with pointing hand cursor
     let infoLabel = NSLabel(
       text: "Vechsel is in active development. Please report any issues you find on GitHub."
     )
     infoLabel.lineBreakMode = .byWordWrapping
     infoLabel.maximumNumberOfLines = 3
-    infoLabel.font = NSFont.systemFont(ofSize: 13, weight: .light)
+    infoLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
     infoLabel.textColor = .secondaryLabelColor
     infoLabel.setContentHuggingPriority(.defaultHigh, for: .vertical)
     infoLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
     infoLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+    infoLabel.widthAnchor.constraint(
+      lessThanOrEqualToConstant: 400
+    ).isActive = true  // Limit width for better readability
 
     mainStack.addArrangedSubview(infoLabel)
 
-    // GitHub link
-    let githubLabel = NSLabel(text: "View on GitHub")
+    // GitHub link with pointing hand cursor
+    let githubLabel = PointingHandLabel(text: "View on GitHub")
     githubLabel.isSelectable = true
     githubLabel.isEditable = false
     githubLabel.isBezeled = false
@@ -96,15 +109,18 @@ class GeneralViewController: NSViewController, PreferencePane {
 
     let explainerLabel = NSLabel(
       text:
-        "You can reset the position of the switcher preview to the top of your screen. This is useful if you have moved it around and want to restore the default position."
+        "You can move the position of the switcher preview by dragging it while it is active. Click the button below to reset it back to the center of the screen."
     )
     explainerLabel.lineBreakMode = .byWordWrapping
     explainerLabel.maximumNumberOfLines = 0
-    explainerLabel.font = NSFont.systemFont(ofSize: 13, weight: .light)
+    explainerLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
     explainerLabel.textColor = .secondaryLabelColor
     explainerLabel.setContentHuggingPriority(.defaultHigh, for: .vertical)
     explainerLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
     explainerLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+    explainerLabel.widthAnchor.constraint(
+      lessThanOrEqualToConstant: 400
+    ).isActive = true  // Limit width for better readability
     mainStack.addArrangedSubview(explainerLabel)
 
     // Reset preview position
@@ -120,14 +136,15 @@ class GeneralViewController: NSViewController, PreferencePane {
     resetStack.addArrangedSubview(getPreviewResetButton())
     mainStack.addArrangedSubview(resetStack)
 
-    self.view = mainStack
+    container.addSubview(mainStack)
+    self.view = container
 
-    // Ensure mainStack fills its superview so edgeInsets are respected
+    // Ensure mainStack is inset by 20pt from the container on all sides
     NSLayoutConstraint.activate([
-      mainStack.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-      mainStack.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-      mainStack.topAnchor.constraint(equalTo: self.view.topAnchor),
-      mainStack.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+      mainStack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 20),
+      mainStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -20),
+      mainStack.topAnchor.constraint(equalTo: container.topAnchor, constant: 20),
+      mainStack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -20),
     ])
   }
 

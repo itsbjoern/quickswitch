@@ -2,46 +2,22 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "sweetpad-lldb",
-      "request": "attach",
-      "name": "Attach to running app (SweetPad)",
-      "preLaunchTask": "sweetpad: launch"
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:vechsel}",
+      "name": "Debug Vechsel",
+      "program": "${workspaceFolder:vechsel}/.build/debug/Vechsel",
+      "preLaunchTask": "swift: Build Debug Vechsel"
     },
     {
       "type": "swift",
       "request": "launch",
       "args": [],
       "cwd": "${workspaceFolder:vechsel}",
-      "name": "Debug vechsel",
-      "program": "${workspaceFolder:vechsel}/.build/debug/vechsel",
-      "preLaunchTask": "swift: Build Debug vechsel"
-    },
-    {
-      "type": "swift",
-      "request": "launch",
-      "args": [],
-      "cwd": "${workspaceFolder:vechsel}",
-      "name": "Release vechsel",
-      "program": "${workspaceFolder:vechsel}/.build/release/vechsel",
-      "preLaunchTask": "swift: Build Release vechsel"
-    },
-    {
-      "type": "swift",
-      "request": "launch",
-      "args": [],
-      "cwd": "${workspaceFolder:vechsel}",
-      "name": "Debug Debug",
-      "program": "${workspaceFolder:vechsel}/.build/debug/Debug",
-      "preLaunchTask": "swift: Build Debug Debug"
-    },
-    {
-      "type": "swift",
-      "request": "launch",
-      "args": [],
-      "cwd": "${workspaceFolder:vechsel}",
-      "name": "Release Debug",
-      "program": "${workspaceFolder:vechsel}/.build/release/Debug",
-      "preLaunchTask": "swift: Build Release Debug"
+      "name": "Release Vechsel",
+      "program": "${workspaceFolder:vechsel}/.build/release/Vechsel",
+      "preLaunchTask": "swift: Build Release Vechsel"
     }
   ]
 }
