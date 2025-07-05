@@ -24,9 +24,19 @@ class QSWindow: NSObject {
   }
 
   func title() -> String {
-    let title: String? = axWindow?.getAttribute("Title")
-    return cgWindow.name() ?? title ?? app.localizedName
-      ?? "Unknown"
+    let cgTitle = cgWindow.name()
+    if cgTitle != nil && cgTitle != "" {
+      return cgTitle!
+    }
+    let axTitle: String? = axWindow?.getAttribute("Title")
+    if axTitle != nil && axTitle != "" {
+      return axTitle!
+    }
+    if app.localizedName != nil && app.localizedName != "" {
+      return app.localizedName!
+    }
+
+    return "Unknown"
   }
 
   func focus() {
